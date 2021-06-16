@@ -3,43 +3,37 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
-	"github.com/thearyanahmed/nlogx/utils/env"
-	"strings"
+	"time"
 )
 
-func BootAndListen() {
-	conf := getReadConfig()
+func BootAndListen(brokers []string,kafkaTopic ,kafkaClientId string) {
+	// make a new reader that consumes from topic-A
+	config := kafka.ReaderConfig{
+		Brokers:         brokers,
+		GroupID:         kafkaClientId,
+		Topic:           kafkaTopic,
+		MinBytes:        10e3,            // 10KB
+		MaxBytes:        10e6,            // 10MB
+		MaxWait:         1 * time.Second, // Maximum amount of time to wait for new data to come when fetching batches of messages from kafka.
+		ReadLagInterval: -1,
+	}
 
-	reader := kafka.NewReader(conf)
+	reader := kafka.NewReader(config)
+
+	defer func(reader *kafka.Reader) {
+		_ = reader.Close()
+	}(reader)
 
 	for {
-		message, err := reader.ReadMessage(context.Background())
+		m, err := reader.ReadMessage(context.Background())
 
 		if err != nil {
-			fmt.Println("Error ",err.Error())
+			log.Error().Msgf("error while receiving message: %s", err.Error())
 			continue
 		}
 
-
-		fmt.Printf("[+] msg: %s\n",string(message.Value))
-	}
-}
-
-func getReadConfig() kafka.ReaderConfig{
-	brokerAddresses := env.Get("KAFKA_BROKER_ADDRESS")
-	brokers 		:= strings.Split(brokerAddresses,",")
-
-	topic 	:= env.Get("KAFKA_TOPIC")
-	groupID := env.Get("KAFKA_GROUP_ID")
-
-
-	return kafka.ReaderConfig{
-		Brokers:                brokers,
-		GroupID:                groupID,
-		GroupTopics:            nil,
-		Topic:                  topic,
-		Partition:              0,
-		MaxBytes: 				10,
+		fmt.Printf("tpc: %v | prtn: %v | ofst: %v |: %s\n", m.Topic, m.Partition, m.Offset, string(m.Value))
 	}
 }
