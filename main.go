@@ -5,29 +5,33 @@ import (
 	"flag"
 	consumer "github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
+	"github.com/thearyanahmed/nlogx/utils/random"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
+	"time"
 )
 
 var (
-	// kafka
 	kafkaBrokerUrl     string
-	kafkaVerbose       bool
 	kafkaTopic         string
 	kafkaConsumerGroup string
 	kafkaClientId      string
 )
 
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 func main() {
 	env.LoadEnv()
 
 	flag.StringVar(&kafkaBrokerUrl, "kafka-brokers", "localhost:9092", "Kafka brokers in comma separated value")
-	flag.BoolVar(&kafkaVerbose, "kafka-	verbose", true, "Kafka verbose logging")
 	flag.StringVar(&kafkaTopic, "kafka-topic", "hello_world", "Kafka topic. Only one topic per worker.")
 	flag.StringVar(&kafkaConsumerGroup, "kafka-consumer-group", "consumer-group", "Kafka consumer group")
-	flag.StringVar(&kafkaClientId, "kafka-client-id", "client_ID", "Kafka client id")
+	flag.StringVar(&kafkaClientId, "kafka-client-id", "kafka_client_"+random.Str(3), "Kafka client id")
 
 	flag.Parse()
 
@@ -50,12 +54,13 @@ func main() {
 
 	brokers := strings.Split(kafkaBrokerUrl, ",")
 
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 
-	wg.Add(1)
+	//wg.Add(1)
 
-	go consumer.BootAndListen(brokers,kafkaTopic,kafkaClientId)
+	//go
+	consumer.BootAndListen(brokers,kafkaTopic,kafkaClientId) // concurrency not necessary atm
 
-	wg.Wait()
+	//wg.Wait()
 
 }

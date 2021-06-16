@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	"github.com/thearyanahmed/nlogx/utils/env"
+	"github.com/thearyanahmed/nlogx/utils/random"
 	"log"
 	"math/rand"
 	"os"
@@ -66,8 +67,8 @@ func produceRandomStuff() {
 }
 
 func writeMessage(w *kafka.Writer, group *sync.WaitGroup) {
-	key := randStringRunes(4)
-	msg := randStringRunes(10)
+	key := random.Str(4)
+	msg := random.Str(10)
 
 	err := w.WriteMessages(context.Background(),
 		kafka.Message{
@@ -85,15 +86,4 @@ func writeMessage(w *kafka.Writer, group *sync.WaitGroup) {
 
 	numberOfMessages++
 
-}
-
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
 }
