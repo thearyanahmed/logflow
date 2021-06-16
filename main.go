@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
 )
 
@@ -10,5 +12,9 @@ func main() {
 
 	env.LoadEnv()
 
-	fmt.Println(env.Get("APP_ENV"))
+	ctx := context.Background()
+
+	kafka.Consume(ctx)
+
+	fmt.Printf("End of the line ")
 }
