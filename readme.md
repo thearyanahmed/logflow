@@ -11,6 +11,6 @@ This is a demo project, it will collect nginx layer 7 data and layer 4 packet da
 - [ ] Enable .env     
 - [ ] Connect to kafka
 - [ ] Setup a kafka client to receive messages
-- [ ] Setup a kafka sender 
+- [ ] Setup a kafka producer 
 - [ ] Write tests
 - [ ] Get some log data and test the whole system
