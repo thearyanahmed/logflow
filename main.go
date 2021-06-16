@@ -1,20 +1,20 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
+	"sync"
 )
 
 func main() {
-	fmt.Println("startx")
-
 	env.LoadEnv()
 
-	ctx := context.Background()
+	var wg sync.WaitGroup
 
-	kafka.Consume(ctx)
+	wg.Add(1)
 
-	fmt.Printf("End of the line ")
+	go kafka.BootAndListen()
+
+	wg.Wait()
+
 }
