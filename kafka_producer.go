@@ -85,5 +85,4 @@ func writeMessage(w *kafka.Writer, group *sync.WaitGroup) {
 	}
 
 	numberOfMessages++
-
 }
