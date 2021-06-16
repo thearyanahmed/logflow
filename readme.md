@@ -6,7 +6,7 @@ This is a demo project, it will collect nginx layer 7 data and layer 4 packet da
 - [ ] Installations & setup
     - [x] Setup kafka
     - [ ] Use docker container for kafka
-    - [ ] Decide on protobuf / grpc / rpc
+    - [ ] Decide on protobuf ( grpc / rpc )
     - [ ] Setup a nginx docker
 - [x] Enable .env support     
 - [x] Connect to kafka
