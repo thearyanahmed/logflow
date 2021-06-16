@@ -4,17 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/segmentio/kafka-go"
+	"github.com/thearyanahmed/nlogx/utils/env"
+	"strings"
 )
 
 func BootAndListen() {
-	conf := kafka.ReaderConfig{
-		Brokers:                []string{"localhost:9092"},
-		GroupID:                "g_1",
-		GroupTopics:            nil,
-		Topic:                  "hello_world",
-		Partition:              0,
-		MaxBytes: 				10,
-	}
+	conf := getReadConfig()
 
 	reader := kafka.NewReader(conf)
 
@@ -26,7 +21,25 @@ func BootAndListen() {
 			continue
 		}
 
-		fmt.Printf("message: %s\n",string(message.Value))
+
+		fmt.Printf("[+] msg: %s\n",string(message.Value))
 	}
-	
+}
+
+func getReadConfig() kafka.ReaderConfig{
+	brokerAddresses := env.Get("KAFKA_BROKER_ADDRESS")
+	brokers 		:= strings.Split(brokerAddresses,",")
+
+	topic 	:= env.Get("KAFKA_TOPIC")
+	groupID := env.Get("KAFKA_GROUP_ID")
+
+
+	return kafka.ReaderConfig{
+		Brokers:                brokers,
+		GroupID:                groupID,
+		GroupTopics:            nil,
+		Topic:                  topic,
+		Partition:              0,
+		MaxBytes: 				10,
+	}
 }
