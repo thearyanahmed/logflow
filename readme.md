@@ -54,8 +54,7 @@ If you want to run kafka inside docker, you can simply use your docker
 container's address eg: localhost:39092 or something like that ( in the .env) .
 
 
-- To run the app, you can run ```go run main.go``` . It will use the .env and 
-start a kafka consumer. 
+- To run the app, you can run ```go run main.go``` . 
   
 The app will start listening ,
 
@@ -67,3 +66,13 @@ Your consumer console should have an output like this
 ![Consumer](images/consumer.png?raw=true "Kafka Consumers")
 
 
+#### Flags
+
+There are a few flags you can pass along when running the main.go file.
+Those are, 
+
+- *kafka-brokers* these are comma separated values for your brokers. eg: *localhost:9092,localhost:39093* . It has a default value of localhost:9092 
+- *kafka-topic* eg: hello_world. Default hello_world
+- *kafka-client-id* eg: test_client_id. Default will be a random string kafka_client_XYZ . XYZ is randomly generated string.
+
+#### More to come

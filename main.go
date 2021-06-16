@@ -16,7 +16,7 @@ import (
 var (
 	kafkaBrokerUrl     string
 	kafkaTopic         string
-	kafkaConsumerGroup string
+	//kafkaConsumerGroup string
 	kafkaClientId      string
 )
 
@@ -30,7 +30,7 @@ func main() {
 
 	flag.StringVar(&kafkaBrokerUrl, "kafka-brokers", "localhost:9092", "Kafka brokers in comma separated value")
 	flag.StringVar(&kafkaTopic, "kafka-topic", "hello_world", "Kafka topic. Only one topic per worker.")
-	flag.StringVar(&kafkaConsumerGroup, "kafka-consumer-group", "consumer-group", "Kafka consumer group")
+	//flag.StringVar(&kafkaConsumerGroup, "kafka-consumer-group", "consumer-group", "Kafka consumer group")
 	flag.StringVar(&kafkaClientId, "kafka-client-id", "kafka_client_"+random.Str(3), "Kafka client id")
 
 	flag.Parse()
