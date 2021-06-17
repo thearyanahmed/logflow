@@ -15,7 +15,7 @@ type server struct {
 
 func (s *server) RecordFlow (_ context.Context, in *pb.FlowRequest) (*pb.FlowResponse, error) {
 
-	fmt.Printf("got data from request %v\n",in.GetFlow().Hello)
+	fmt.Printf("got data from request %v\n",in.GetFlow().GetHello())
 
 	res := pb.FlowResponse{Status: true}
 
