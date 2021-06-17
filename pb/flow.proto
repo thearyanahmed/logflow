@@ -17,8 +17,6 @@ message FlowResponse {
 }
 
 service FlowService { // client stream
-  rpc RecordFlow(FlowRequest) returns (FlowResponse) {};
-
   rpc StreamFlow(stream FlowRequest) returns (FlowResponse) {};
 }
 

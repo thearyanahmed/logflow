@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"flag"
-	consumer "github.com/thearyanahmed/nlogx/kafka"
+	"github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
 	"github.com/thearyanahmed/nlogx/utils/random"
+	"log"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -16,7 +17,6 @@ import (
 var (
 	kafkaBrokerUrl     string
 	kafkaTopic         string
-	//kafkaConsumerGroup string
 	kafkaClientId      string
 )
 
@@ -53,14 +53,14 @@ func main() {
 	}()
 
 	brokers := strings.Split(kafkaBrokerUrl, ",")
+	topic 	:= env.Get("KAFKA_TOPIC")
 
-	//var wg sync.WaitGroup
+	writer := kafka.Writer(brokers,topic)
 
-	//wg.Add(1)
+	err := kafka.Produce(writer, ctx,"hello", "world")
 
-	//go
-	consumer.BootAndListen(brokers,kafkaTopic,kafkaClientId) // concurrency not necessary atm
-
-	//wg.Wait()
-
+	if err != nil {
+		log.Fatalf("error writing to kafka %v\n",err.Error())
+		return
+	}
 }

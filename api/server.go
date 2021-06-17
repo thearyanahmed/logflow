@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb"
 	"google.golang.org/grpc"
@@ -26,15 +25,6 @@ func (st *stream) Recv(*pb.FlowResponse) error {
 	return nil
 }
 
-
-func (s *server) RecordFlow (ctx context.Context, in *pb.FlowRequest, ) (*pb.FlowResponse,error) {
-
-	//fmt.Printf("got data from request %v\n",in.GetFlow().GetHello())
-
-	return nil, nil
-
-}
-
 func (s *server) StreamFlow(stream pb.FlowService_StreamFlowServer) error{
 
 	for {
@@ -48,7 +38,7 @@ func (s *server) StreamFlow(stream pb.FlowService_StreamFlowServer) error{
 			return err
 		}
 
-		fmt.Printf("received stream msg: %v\n",msg.GetFlow().GetHello())
+		fmt.Printf("received stream msg: %v\n push data to kafka",msg.GetFlow().GetHello())
 	}
 }
 
