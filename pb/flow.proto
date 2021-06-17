@@ -16,6 +16,9 @@ message FlowResponse {
   bool status = 1;
 }
 
-service FlowService {
+service FlowService { // client stream
   rpc RecordFlow(FlowRequest) returns (FlowResponse) {};
+
+  rpc StreamFlow(stream FlowRequest) returns (FlowResponse) {};
 }
+

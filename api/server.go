@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 	"net"
 )
@@ -13,13 +14,42 @@ type server struct {
 	pb.UnimplementedFlowServiceServer
 }
 
-func (s *server) RecordFlow (_ context.Context, in *pb.FlowRequest) (*pb.FlowResponse, error) {
+type stream struct {
+	grpc.ServerStream
+}
 
-	fmt.Printf("got data from request %v\n",in.GetFlow().GetHello())
+func (st *stream) SendAndClose(*pb.FlowResponse) error {
+	return nil
+}
 
-	res := pb.FlowResponse{Status: true}
+func (st *stream) Recv(*pb.FlowResponse) error {
+	return nil
+}
 
-	return &res, nil
+
+func (s *server) RecordFlow (ctx context.Context, in *pb.FlowRequest, ) (*pb.FlowResponse,error) {
+
+	//fmt.Printf("got data from request %v\n",in.GetFlow().GetHello())
+
+	return nil, nil
+
+}
+
+func (s *server) StreamFlow(stream pb.FlowService_StreamFlowServer) error{
+
+	for {
+		msg, err := stream.Recv()
+
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.FlowResponse{Status: true})
+		}
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("received stream msg: %v\n",msg.GetFlow().GetHello())
+	}
 }
 
 func main()  {
@@ -32,7 +62,8 @@ func main()  {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterFlowServiceServer(s,&server{})
+	server := server{}
+	pb.RegisterFlowServiceServer(s,&server)
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
