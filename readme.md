@@ -58,7 +58,7 @@ container's address eg: localhost:39092 or something like that ( in the .env) .
   
 The app will start listening ,
 
-You can run ```go run kafka_producer.go``` to generate random strings
+You can run ```go run kafka/kafka_producer.go``` to generate random strings
 and stream it to your brokers. 
 
 Your consumer console should have an output like this 
