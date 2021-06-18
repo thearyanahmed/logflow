@@ -14,12 +14,14 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 )
 
 type server struct {
 	packet.UnimplementedLogServiceServer
 	StreamCount int64
 	writerHandler writerHandler
+	startedAt time.Time
 }
 
 type stream struct {
@@ -70,15 +72,20 @@ func (wh *writerHandler) Produce(key, msg string) error {
 
 
 func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
+	s.StreamCount = 0
+	s.startedAt = time.Now()
 
 	for {
 		msg, err := stream.Recv()
 
 		if err == io.EOF {
+
+			timeDiff := time.Since(s.startedAt)
+
 			return stream.SendAndClose(&packet.LogResponse{
 				Success:       true,
 				StreamedCount: s.StreamCount,
-				Message:       "transmission ended. reason: end of file",
+				Message:       "transmission ended. reason: end of file. duration: " + timeDiff.String(),
 			})
 		}
 
@@ -86,12 +93,13 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			return err
 		}
 
-		fmt.Printf("received stream msg: %v\n push data to kafka\n",msg.GetPacket().GetAgentIp())
+		//fmt.Printf("received stream msg: %v\n push data to kafka\n",msg.GetPacket().GetAgentIp())
 
 		s.StreamCount++
 
 		s.writerHandler.wg.Add(1)
 
+		fmt.Printf("stream count %v : time : %v\n",s.StreamCount,s.startedAt)
 
 		go func() {
 
@@ -104,7 +112,7 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			data = append(data,msg.GetHeaders())
 
 
-			fmt.Printf("data %v\n",data)
+			//fmt.Printf("data %v\n",data)
 
 			json, err := json2.Marshal(data)
 
@@ -149,7 +157,6 @@ func main()  {
 	wh.SetWriter(brokers,topic,ctx,&wg)
 
 	server := server{
-		StreamCount:   0,
 		writerHandler: wh,
 	}
 

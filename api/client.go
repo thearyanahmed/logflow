@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb/packet"
@@ -32,7 +33,7 @@ func main()  {
 
 	var i int32
 
-	for i = 0 ; i < 10; i++ {
+	for i = 0 ; i < 1; i++ {
 		pckt := &packet.Packet{
 			Version:    i,
 			IvVersion:  nil,
@@ -72,12 +73,16 @@ func main()  {
 
 		headers = append(headers,header)
 
-		err := r.Send(&packet.LogRequest{
+		logRequest := packet.LogRequest{
 			Packet:  pckt,
 			Log:     nginxLog,
 			Headers: headers,
-		})
+		}
 
+		err := r.Send(&logRequest)
+
+		x := []byte(logRequest.String())
+		fmt.Printf("bytes: 87953 x %v\n",bytes.Count())
 
 		if err != nil {
 			return
@@ -91,6 +96,6 @@ func main()  {
 	}
 
 
-	fmt.Printf("response : %v\n",reply.GetMessage())
+	fmt.Printf("\nstream count :%v\nmsg : %v\n",reply.GetStreamedCount(),reply.GetMessage())
 
 }
