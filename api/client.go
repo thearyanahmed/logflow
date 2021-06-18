@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb/packet"
@@ -81,8 +80,8 @@ func main()  {
 
 		err := r.Send(&logRequest)
 
-		x := []byte(logRequest.String())
-		fmt.Printf("bytes: 87953 x %v\n",bytes.Count())
+		//x := []byte(logRequest.String())
+		//fmt.Printf("bytes: 87953 x %v\n",bytes.Count())
 
 		if err != nil {
 			return
