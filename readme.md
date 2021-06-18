@@ -60,6 +60,17 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic hello_wo
 cp .env.example .env
 ```
 
+Server will start listening on localhost:5053
+
+```bash
+go run api/server.go
+```
+
+Client will send data to grpc
+```bash
+go run api/client.go
+```
+
 
 
 
