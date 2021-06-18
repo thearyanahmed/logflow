@@ -32,7 +32,7 @@ func main()  {
 
 	var i int32
 
-	for i = 0 ; i < 80000; i++ {
+	for i = 0 ; i < 1; i++ {
 		pckt := &packet.Packet{
 			Version:    i,
 			IvVersion:  nil,

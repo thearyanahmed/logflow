@@ -117,7 +117,7 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			err = s.writerHandler.Produce(key,string(json))
 
 			if err != nil {
-				fmt.Printf("error producing : %v\n",err.Error())
+				fmt.Printf("error producing : %v\n",err)
 				return
 			}
 		}()
