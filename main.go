@@ -21,7 +21,6 @@ var (
 	kafkaClientId      string
 )
 
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -65,13 +64,5 @@ func main() {
 
 	fmt.Println("end of the line from client")
 	wg.Wait()
-	//
-	//writer := kafka.Writer(brokers,topic)
-	//
-	//err := kafka.Produce(writer, ctx,"hello", "world")
-	//
-	//if err != nil {
-	//	log.Fatalf("error writing to kafka %v\n",err.Error())
-	//	return
-	//}
+
 }

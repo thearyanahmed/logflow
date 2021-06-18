@@ -93,13 +93,9 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			return err
 		}
 
-		//fmt.Printf("received stream msg: %v\n push data to kafka\n",msg.GetPacket().GetAgentIp())
-
 		s.StreamCount++
 
 		s.writerHandler.wg.Add(1)
-
-		fmt.Printf("stream count %v : time : %v\n",s.StreamCount,s.startedAt)
 
 		go func() {
 
@@ -110,9 +106,6 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			data = append(data,msg.GetPacket())
 			data = append(data,msg.GetLog())
 			data = append(data,msg.GetHeaders())
-
-
-			//fmt.Printf("data %v\n",data)
 
 			json, err := json2.Marshal(data)
 
@@ -142,7 +135,6 @@ func main()  {
 	}
 
 	s := grpc.NewServer()
-
 
 	brokers := strings.Split(env.Get("KAFKA_BROKER_ADDRESS"), ",")
 	topic 	:= env.Get("KAFKA_TOPIC")
