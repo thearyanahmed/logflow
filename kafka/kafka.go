@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"github.com/segmentio/kafka-go"
 	"time"
 )
@@ -19,7 +20,7 @@ func ReaderConfig(brokers []string,kafkaTopic ,kafkaClientId string) *kafka.Read
 	}
 }
 
-func Consume(config kafka.ReaderConfig) (kafka.Message,error) {
+func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 	reader := kafka.NewReader(config)
 
 	defer func(reader *kafka.Reader) {
@@ -27,9 +28,13 @@ func Consume(config kafka.ReaderConfig) (kafka.Message,error) {
 	}(reader)
 
 	for {
-		return reader.ReadMessage(context.Background())
+		m, err := reader.ReadMessage(context.Background())
+		fmt.Printf("tpc: %v | prtn: %v | ofst: %v |: %s\n", m.Topic, m.Partition, m.Offset, string(m.Value))
 
-		//fmt.Printf("tpc: %v | prtn: %v | ofst: %v |: %s\n", m.Topic, m.Partition, m.Offset, string(m.Value))
+		if err != nil {
+			fmt.Printf("error not nil, %v\n",err.Error())
+		}
+		//return m, err
 	}
 }
 

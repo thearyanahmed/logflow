@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	kafkaReader "github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
 	"github.com/thearyanahmed/nlogx/utils/random"
 	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
+	"sync"
 	"time"
 )
 
@@ -49,8 +53,18 @@ func main() {
 		os.Exit(1)
 	}()
 
-	//brokers := strings.Split(kafkaBrokerUrl, ",")
-	//topic 	:= env.Get("KAFKA_TOPIC")
+	brokers := strings.Split(kafkaBrokerUrl, ",")
+	topic 	:= env.Get("KAFKA_TOPIC")
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	readerConfig := kafkaReader.ReaderConfig(brokers,topic,kafkaClientId)
+
+	kafkaReader.Consume(*readerConfig)
+
+	fmt.Println("end of the line from client")
+	wg.Wait()
 	//
 	//writer := kafka.Writer(brokers,topic)
 	//

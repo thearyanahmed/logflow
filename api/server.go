@@ -44,6 +44,7 @@ type writerHandler struct {
 }
 
 func (wh *writerHandler) SetWriter(brokers []string,topic string,ctx context.Context, wg *sync.WaitGroup) {
+
 	wh.KafkaWriter = &kafka.Writer{
 		Addr:     kafka.TCP(brokers[0]),
 		Topic:    topic,
@@ -85,26 +86,38 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 			return err
 		}
 
-		fmt.Printf("received stream msg: %v\n push data to kafka",msg.GetPacket().GetAgentIp())
+		fmt.Printf("received stream msg: %v\n push data to kafka\n",msg.GetPacket().GetAgentIp())
 
 		s.StreamCount++
 
 		s.writerHandler.wg.Add(1)
 
+
 		go func() {
 
 			key := random.Str(3)
 
-			json, err := json2.Marshal(msg.GetHeaders())
+			var data []interface{}
+
+			data = append(data,msg.GetPacket())
+			data = append(data,msg.GetLog())
+			data = append(data,msg.GetHeaders())
+
+
+			fmt.Printf("data %v\n",data)
+
+			json, err := json2.Marshal(data)
 
 			if err != nil {
 				fmt.Printf("error marshaling %v\n",err.Error())
+				return
 			}
 
 			err = s.writerHandler.Produce(key,string(json))
 
 			if err != nil {
 				fmt.Printf("error producing : %v\n",err.Error())
+				return
 			}
 		}()
 	}
@@ -112,6 +125,7 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 
 func main()  {
 	fmt.Printf("running server\n")
+	env.LoadEnv()
 
 	lis, err := net.Listen("tcp", ":5053")
 
@@ -128,9 +142,7 @@ func main()  {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	wh := writerHandler{
-		KafkaWriter: nil,
-	}
+	wh := writerHandler{}
 
 	var wg sync.WaitGroup
 

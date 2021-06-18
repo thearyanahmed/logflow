@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/thearyanahmed/nlogx/pb"
+	"github.com/thearyanahmed/nlogx/pb/packet"
 	"google.golang.org/grpc"
 	"log"
 	"time"
@@ -19,12 +19,12 @@ func main()  {
 
 	defer conn.Close()
 
-	c := pb.NewFlowServiceClient(conn)
+	c := packet.NewLogServiceClient(conn)
 
 	ctx , cancel := context.WithTimeout(context.Background(),time.Second)
 	defer cancel()
 
-	r , err := c.StreamFlow(ctx)
+	r , err := c.StreamLog(ctx)
 
 	if err != nil{
 		log.Fatalf("error in request %v\n",err.Error())
@@ -33,10 +33,49 @@ func main()  {
 	var i int32
 
 	for i = 0 ; i < 10; i++ {
-		flow := pb.Flow{Hello: i}
+		pckt := &packet.Packet{
+			Version:    i,
+			IvVersion:  nil,
+			AgentIp:    2288332211,
+			SubAgentId: 55772288,
+		}
 
-		err := r.Send(&pb.FlowRequest{
-			Flow: &flow,
+		nginxLog := &packet.NginxLog{
+			BytesSent:               762,
+			Connection:              "connection",
+			ConnectionRequests:      666,
+			Status:                  1,
+			Host:                    "my host",
+			NginxVersion:            "nginx version",
+			ProxyProtocolAddr:       "proxy protocol addr",
+			ProxyProtocolPort:       1234,
+			ProxyProtocolServerAddr: "proxy protocol server addr",
+			ProxyProtocolServerPort: 2345,
+			RemoteAddr:              "remote addr",
+			RemotePort:              3456,
+			RemoteUser:              "remote user",
+			RequestMethod:           "get",
+			ServerAddr:              "server addr",
+			ServerName:              "server name",
+			ServerPort:              5678,
+			Endpoint:                "/end/point",
+			HttpVersion:             "http1.1",
+			UserAgent:               "safari",
+		}
+
+		var headers []*packet.Header
+
+		header := &packet.Header{
+			Key:   "hello",
+			Value: "world",
+		}
+
+		headers = append(headers,header)
+
+		err := r.Send(&packet.LogRequest{
+			Packet:  pckt,
+			Log:     nginxLog,
+			Headers: headers,
 		})
 
 
@@ -52,6 +91,6 @@ func main()  {
 	}
 
 
-	fmt.Printf("response : %v\n",reply.GetStatus())
+	fmt.Printf("response : %v\n",reply.GetMessage())
 
 }
