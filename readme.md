@@ -9,6 +9,7 @@ This is a demo project, it will collect nginx layer 7 data and layer 4 packet da
     - [x] Decide on protobuf ( grpc / rpc )
     - [ ] Setup a nginx docker
 - [x] Enable .env support     
+- [ ] Draw system architecture  
 - [x] Connect to kafka
 - [x] Setup a kafka client to receive messages
 - [x] Setup a kafka producer 
@@ -17,7 +18,8 @@ This is a demo project, it will collect nginx layer 7 data and layer 4 packet da
 - [ ] Dockerize full app
 - [x] Prepare dummy NginxLogRequest, Packet & Headers
 - [x] Prepare a client to test grpc and kafka producer with dummy data
-- [x] Also see manually if kafka consumer is consuming messages 
+- [x] Also see manually if kafka consumer is consuming messages
+- [ ] Document everything
 
 
 #### At the moment, I did not include any docker image for any component.
@@ -42,13 +44,23 @@ bin/kafka-server-start.sh config/server.properties
 - Then create a topic with 
 
 ```bash
-bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic $topicName
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic hello_world
 ```
 
-- you can check your created topics with 
+
+- Running kafka consumer
+
 ```bash
-bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic hello_world --from-beginning```
+
+- Copy .env.example to .env
+
+```bash
+cp .env.example .env
 ```
+
+
 
 
 ### With Docker
