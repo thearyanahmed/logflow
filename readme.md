@@ -76,3 +76,8 @@ Those are,
 - *kafka-client-id* eg: test_client_id. Default will be a random string kafka_client_XYZ . XYZ is randomly generated string.
 
 #### More to come
+
+
+### Sources
+
+[nginx log data format](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_formata)

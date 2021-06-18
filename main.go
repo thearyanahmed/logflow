@@ -3,14 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/thearyanahmed/nlogx/kafka"
 	"github.com/thearyanahmed/nlogx/utils/env"
 	"github.com/thearyanahmed/nlogx/utils/random"
-	"log"
 	"math/rand"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 )
 
@@ -52,15 +49,15 @@ func main() {
 		os.Exit(1)
 	}()
 
-	brokers := strings.Split(kafkaBrokerUrl, ",")
-	topic 	:= env.Get("KAFKA_TOPIC")
-
-	writer := kafka.Writer(brokers,topic)
-
-	err := kafka.Produce(writer, ctx,"hello", "world")
-
-	if err != nil {
-		log.Fatalf("error writing to kafka %v\n",err.Error())
-		return
-	}
+	//brokers := strings.Split(kafkaBrokerUrl, ",")
+	//topic 	:= env.Get("KAFKA_TOPIC")
+	//
+	//writer := kafka.Writer(brokers,topic)
+	//
+	//err := kafka.Produce(writer, ctx,"hello", "world")
+	//
+	//if err != nil {
+	//	log.Fatalf("error writing to kafka %v\n",err.Error())
+	//	return
+	//}
 }

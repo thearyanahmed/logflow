@@ -19,14 +19,6 @@ func ReaderConfig(brokers []string,kafkaTopic ,kafkaClientId string) *kafka.Read
 	}
 }
 
-func Writer(brokers []string,topic string) *kafka.Writer {
-	return &kafka.Writer{
-		Addr:     kafka.TCP(brokers[0]),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
 func Consume(config kafka.ReaderConfig) (kafka.Message,error) {
 	reader := kafka.NewReader(config)
 
@@ -38,6 +30,19 @@ func Consume(config kafka.ReaderConfig) (kafka.Message,error) {
 		return reader.ReadMessage(context.Background())
 
 		//fmt.Printf("tpc: %v | prtn: %v | ofst: %v |: %s\n", m.Topic, m.Partition, m.Offset, string(m.Value))
+	}
+}
+
+type WriterInterface interface {
+	Writer(brokers []string,topic string) *kafka.Writer
+	Produce(w *kafka.Writer, ctx context.Context, key, msg string) error
+}
+
+func Writer(brokers []string,topic string) *kafka.Writer {
+	return &kafka.Writer{
+		Addr:     kafka.TCP(brokers[0]),
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
 	}
 }
 
