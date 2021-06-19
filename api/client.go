@@ -6,6 +6,7 @@ import (
 	"github.com/thearyanahmed/nlogx/pb/packet"
 	"google.golang.org/grpc"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func main()  {
 
 	c := packet.NewLogServiceClient(conn)
 
-	ctx , cancel := context.WithTimeout(context.Background(),time.Second)
+	ctx , cancel := context.WithTimeout(context.Background(),time.Second * 20)
 	defer cancel()
 
 	r , err := c.StreamLog(ctx)
@@ -32,62 +33,74 @@ func main()  {
 
 	var i int32
 
-	for i = 0 ; i < 10000; i++ {
-		pckt := &packet.Packet{
-			Version:    i,
-			IvVersion:  nil,
-			AgentIp:    2288332211,
-			SubAgentId: 55772288,
-		}
 
-		nginxLog := &packet.NginxLog{
-			BytesSent:               762,
-			Connection:              "connection",
-			ConnectionRequests:      666,
-			Status:                  1,
-			Host:                    "my host",
-			NginxVersion:            "nginx version",
-			ProxyProtocolAddr:       "proxy protocol addr",
-			ProxyProtocolPort:       1234,
-			ProxyProtocolServerAddr: "proxy protocol server addr",
-			ProxyProtocolServerPort: 2345,
-			RemoteAddr:              "remote addr",
-			RemotePort:              3456,
-			RemoteUser:              "remote user",
-			RequestMethod:           "get",
-			ServerAddr:              "server addr",
-			ServerName:              "server name",
-			ServerPort:              5678,
-			Endpoint:                "/end/point",
-			HttpVersion:             "http1.1",
-			UserAgent:               "safari",
-		}
+	var wg sync.WaitGroup
+	var mutex = sync.Mutex{}
 
-		var headers []*packet.Header
 
-		header := &packet.Header{
-			Key:   "hello",
-			Value: "world",
-		}
+	for i = 0 ; i < 10000000; i++ {
+		wg.Add(1)
 
-		headers = append(headers,header)
+		go func( i int32, mt *sync.Mutex, wg *sync.WaitGroup) {
+			defer wg.Done()
+			defer mt.Unlock()
 
-		logRequest := packet.LogRequest{
-			Packet:  pckt,
-			Log:     nginxLog,
-			Headers: headers,
-			Topics: []string{"hello_world","banana_world"},
-		}
+			mt.Lock()
+			pckt := &packet.Packet{
+				Version:    i,
+				IvVersion:  nil,
+				AgentIp:    2288332211,
+				SubAgentId: 55772288,
+			}
 
-		err := r.Send(&logRequest)
+			nginxLog := &packet.NginxLog{
+				BytesSent:               762,
+				Connection:              "connection",
+				ConnectionRequests:      666,
+				Status:                  1,
+				Host:                    "my host",
+				NginxVersion:            "nginx version",
+				ProxyProtocolAddr:       "proxy protocol addr",
+				ProxyProtocolPort:       1234,
+				ProxyProtocolServerAddr: "proxy protocol server addr",
+				ProxyProtocolServerPort: 2345,
+				RemoteAddr:              "remote addr",
+				RemotePort:              3456,
+				RemoteUser:              "remote user",
+				RequestMethod:           "get",
+				ServerAddr:              "server addr",
+				ServerName:              "server name",
+				ServerPort:              5678,
+				Endpoint:                "/end/point",
+				HttpVersion:             "http1.1",
+				UserAgent:               "safari",
+			}
 
-		//x := []byte(logRequest.String())
-		//fmt.Printf("bytes: 87953 x %v\n",bytes.Count())
+			var headers []*packet.Header
 
-		if err != nil {
-			return
-		}
+			header := &packet.Header{
+				Key:   "hello",
+				Value: "world",
+			}
+
+			headers = append(headers,header)
+
+			logRequest := packet.LogRequest{
+				Packet:  pckt,
+				Log:     nginxLog,
+				Headers: headers,
+				Topics: []string{"hello_world","banana_world"},
+			}
+
+			err := r.Send(&logRequest)
+
+			if err != nil {
+				return
+			}
+		}(i,&mutex,&wg)
 	}
+
+	wg.Wait()
 
 	reply , err := r.CloseAndRecv()
 
