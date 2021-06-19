@@ -1,15 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	json2 "encoding/json"
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb/packet"
+	"github.com/thearyanahmed/nlogx/utils/env"
 	"google.golang.org/grpc"
 	"log"
+	"os"
 	"sync"
 	"time"
 )
+
+func init()  {
+	env.LoadEnv()
+}
 
 func main()  {
 	fmt.Printf("running client\n")
@@ -37,50 +44,59 @@ func main()  {
 		log.Fatalf("error in request %v\n",err.Error())
 	}
 
-	var i int32
+	filePath, _ := os.Getwd()
 
+	filePath = filePath + "/" + env.Get("TEST_DATA_FILE")
+
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		fmt.Printf("error with file %v\n",err.Error())
+		return
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
 
 	var wg sync.WaitGroup
 	var mutex = sync.Mutex{}
 
+	for scanner.Scan() {
 
-	for i = 0 ; i < 10000000; i++ {
+		fmt.Printf("%v\n",scanner.Text())
+
 		wg.Add(1)
 
-		go func( i int32, mt *sync.Mutex, wg *sync.WaitGroup) {
+		go func(mt *sync.Mutex, wg *sync.WaitGroup) {
 			defer wg.Done()
 			defer mt.Unlock()
 
 			mt.Lock()
 
-			json, err := json2.Marshal("hello world")
+			json, err := json2.Marshal(scanner.Text())
 
 			if err != nil {
 				fmt.Printf("error marshaling %v\n",err.Error())
 				return
 			}
 
-			var headers []*packet.Header
-
-			header := &packet.Header{
-				Key:   "hello",
-				Value: "world",
-			}
-
-			headers = append(headers,header)
-
 			logRequest := packet.LogRequest{
-				Headers: headers,
-				Topics: []string{"hello_world","banana_world"},
+				Topics: []string{"hello_world"},
 				Payload: json,
 			}
 
 			err = r.Send(&logRequest)
 
 			if err != nil {
+				fmt.Printf("error while sending data to grpc server %v\n",err.Error())
 				return
 			}
-		}(i,&mutex,&wg)
+		}(&mutex,&wg)
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("scanner error %v\n",err.Error())
 	}
 
 	wg.Wait()

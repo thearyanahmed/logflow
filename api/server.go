@@ -80,7 +80,6 @@ func (wh *writerHandler) Produce(writer *kafka.Writer, key, msg string) error {
 	return err
 }
 
-
 func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 	s.StreamCount = 0
 	s.startedAt = time.Now()
