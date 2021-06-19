@@ -1,4 +1,6 @@
 #!/bin/bash
 
-docker-compose -f kafka.yml "$1"
+echo "Work In Progress"
+
+#docker-compose -f kafka.yml "$1"
 
