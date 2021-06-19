@@ -5,8 +5,8 @@ import (
 	"context"
 	json2 "encoding/json"
 	"fmt"
-	"github.com/thearyanahmed/nlogx/pb/packet"
-	"github.com/thearyanahmed/nlogx/utils/env"
+	"github.com/thearyanahmed/logflow/pb/packet"
+	"github.com/thearyanahmed/logflow/utils/env"
 	"google.golang.org/grpc"
 	"log"
 	"os"
@@ -107,7 +107,5 @@ func main()  {
 		log.Fatalf("error reply %v\n",err.Error())
 	}
 
-
 	fmt.Printf("\nstream count :%v\nmsg : %v\n",reply.GetStreamedCount(),reply.GetMessage())
-
 }

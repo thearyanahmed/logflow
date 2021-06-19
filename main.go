@@ -4,9 +4,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	kafkaReader "github.com/thearyanahmed/nlogx/kafka"
-	"github.com/thearyanahmed/nlogx/utils/env"
-	"github.com/thearyanahmed/nlogx/utils/random"
+	kafkaReader "github.com/thearyanahmed/logflow/kafka"
+	"github.com/thearyanahmed/logflow/utils/env"
+	"github.com/thearyanahmed/logflow/utils/random"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -34,6 +34,9 @@ func main() {
 	flag.StringVar(&kafkaClientId, "kafka-client-id", "kafka_client_"+random.Str(3), "Kafka client id")
 
 	flag.Parse()
+
+	fmt.Printf("hello")
+	return
 
 	signalChan := make(chan os.Signal, 1)
 

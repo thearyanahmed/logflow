@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package packet;
 
-option go_package = "github.com/thearyanahmed/nlogx/pb/packet";
+option go_package = "github.com/thearyanahmed/logflow/pb/packet";
 
 message Header {
   string key   = 1;
