@@ -42,20 +42,3 @@ type WriterInterface interface {
 	Writer(brokers []string,topic string) *kafka.Writer
 	Produce(w *kafka.Writer, ctx context.Context, key, msg string) error
 }
-
-func Writer(brokers []string,topic string) *kafka.Writer {
-	return &kafka.Writer{
-		Addr:     kafka.TCP(brokers[0]),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
-func Produce(w *kafka.Writer, ctx context.Context, key, msg string) error {
-	return w.WriteMessages(ctx,
-		kafka.Message{
-			Key:   []byte(key),
-			Value: []byte(msg),
-		},
-	)
-}

@@ -151,7 +151,7 @@ func main()  {
 	fmt.Printf("running server\n")
 	env.LoadEnv()
 
-	lis, err := net.Listen("tcp", ":5053")
+	lis, err := net.Listen("tcp", ":" + env.Get("RPC_PORT"))
 
 	if err != nil {
 		fmt.Printf("error opening tcp server %v\n",err.Error())

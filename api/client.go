@@ -21,9 +21,13 @@ func init()  {
 func main()  {
 	fmt.Printf("running client\n")
 
-	conn, err := grpc.Dial("localhost:5053", grpc.WithInsecure(), grpc.WithBlock())
+	host := env.Get("RPC_HOST") + ":" + env.Get("RPC_PORT")
+
+ 	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithBlock())
+
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		fmt.Printf("could not dial grpc\n%v\n",err.Error())
+		return
 	}
 
 	defer func(conn *grpc.ClientConn) {
@@ -41,7 +45,8 @@ func main()  {
 	r , err := c.StreamLog(ctx)
 
 	if err != nil{
-		log.Fatalf("error in request %v\n",err.Error())
+		fmt.Printf("error with stream log\n%v\n",err.Error())
+		return
 	}
 
 	filePath, _ := os.Getwd()
