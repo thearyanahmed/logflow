@@ -4,53 +4,21 @@ package packet;
 
 option go_package = "github.com/thearyanahmed/nlogx/pb/packet";
 
-message Packet {
-    int32 version       = 11;
-    bytes iv_version    = 12;
-    int64 agent_ip      = 13;
-    uint32 sub_agent_id = 14;
-}
-
-message NginxLog {
-  string log_level                  = 20;
-  int32 bytes_sent                  = 21;
-  string connection                 = 22;
-  int32 connection_requests         = 23;
-  int32 status                      = 24;
-  string host                       = 25;
-  string nginx_version              = 26;
-  string proxy_protocol_addr        = 27;
-  int32 proxy_protocol_port         = 28;
-  string proxy_protocol_server_addr = 29;
-  int32 proxy_protocol_server_port  = 30;
-  string remote_addr                = 31;
-  int32 remote_port                 = 32;
-  string remote_user                = 33;
-  string request_method             = 34;
-  string server_addr                = 35;
-  string server_name                = 36;
-  int32 server_port                 = 37;
-  string endpoint                   = 38;
-  string httpVersion                = 39;
-  string user_agent                 = 40;
-}
-
 message Header {
-  string key   = 98;
-  string value = 97;
+  string key   = 1;
+  string value = 2;
 }
 
 message LogRequest {
-  repeated string topics  = 63;
-  Packet packet           = 41;
-  NginxLog log            = 42;
-  repeated Header headers = 43;
+  repeated string topics  = 1;
+  repeated Header headers = 2;
+  bytes payload           = 3;
 }
 
 message LogResponse {
-  bool success         = 51;
-  int64 streamed_count = 52;
-  string message       = 53;
+  bool success         = 1;
+  string message       = 3;
+  int64 streamed_count = 2;
 }
 
 service LogService {

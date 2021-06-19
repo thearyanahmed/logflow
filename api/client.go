@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	json2 "encoding/json"
 	"fmt"
 	"github.com/thearyanahmed/nlogx/pb/packet"
 	"google.golang.org/grpc"
@@ -18,7 +19,12 @@ func main()  {
 		log.Fatalf("did not connect: %v", err)
 	}
 
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+			fmt.Printf("connection error:%v\n",err.Error())
+		}
+	}(conn)
 
 	c := packet.NewLogServiceClient(conn)
 
@@ -46,34 +52,12 @@ func main()  {
 			defer mt.Unlock()
 
 			mt.Lock()
-			pckt := &packet.Packet{
-				Version:    i,
-				IvVersion:  nil,
-				AgentIp:    2288332211,
-				SubAgentId: 55772288,
-			}
 
-			nginxLog := &packet.NginxLog{
-				BytesSent:               762,
-				Connection:              "connection",
-				ConnectionRequests:      666,
-				Status:                  1,
-				Host:                    "my host",
-				NginxVersion:            "nginx version",
-				ProxyProtocolAddr:       "proxy protocol addr",
-				ProxyProtocolPort:       1234,
-				ProxyProtocolServerAddr: "proxy protocol server addr",
-				ProxyProtocolServerPort: 2345,
-				RemoteAddr:              "remote addr",
-				RemotePort:              3456,
-				RemoteUser:              "remote user",
-				RequestMethod:           "get",
-				ServerAddr:              "server addr",
-				ServerName:              "server name",
-				ServerPort:              5678,
-				Endpoint:                "/end/point",
-				HttpVersion:             "http1.1",
-				UserAgent:               "safari",
+			json, err := json2.Marshal("hello world")
+
+			if err != nil {
+				fmt.Printf("error marshaling %v\n",err.Error())
+				return
 			}
 
 			var headers []*packet.Header
@@ -86,13 +70,12 @@ func main()  {
 			headers = append(headers,header)
 
 			logRequest := packet.LogRequest{
-				Packet:  pckt,
-				Log:     nginxLog,
 				Headers: headers,
 				Topics: []string{"hello_world","banana_world"},
+				Payload: json,
 			}
 
-			err := r.Send(&logRequest)
+			err = r.Send(&logRequest)
 
 			if err != nil {
 				return

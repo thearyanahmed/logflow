@@ -141,10 +141,9 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 func getJsonDataFromMessage(request *packet.LogRequest) ([]byte, error){
 	var data []interface{}
 
-	data = append(data,request.GetPacket())
-	data = append(data,request.GetLog())
 	data = append(data,request.GetHeaders())
 	data = append(data,request.GetTopics())
+	data = append(data,request.GetPayload())
 
 	return json2.Marshal(data)
 }
