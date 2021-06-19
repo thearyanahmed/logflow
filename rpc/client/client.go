@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bufio"
@@ -14,11 +14,7 @@ import (
 	"time"
 )
 
-func init()  {
-	env.LoadEnv()
-}
-
-func main()  {
+func Run()  {
 	fmt.Printf("running client\n")
 
 	host := env.Get("RPC_HOST") + ":" + env.Get("RPC_PORT")
