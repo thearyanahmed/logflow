@@ -2,70 +2,182 @@ package main
 
 import (
 	"context"
-	"flag"
+	json2 "encoding/json"
 	"fmt"
-	kafkaReader "github.com/thearyanahmed/logflow/kafka"
+	"github.com/segmentio/kafka-go"
+	"github.com/thearyanahmed/logflow/pb/packet"
 	"github.com/thearyanahmed/logflow/utils/env"
 	"github.com/thearyanahmed/logflow/utils/random"
-	"math/rand"
-	"os"
-	"os/signal"
+	"google.golang.org/grpc"
+	"io"
+	"log"
+	"net"
 	"strings"
 	"sync"
 	"time"
 )
 
-var (
-	kafkaBrokerUrl     string
-	kafkaTopic         string
-	kafkaClientId      string
-)
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
+type server struct {
+	packet.UnimplementedLogServiceServer
+	StreamCount int64
+	writerHandler writerHandler
+	startedAt time.Time
 }
 
-func main() {
+type stream struct {
+	grpc.ServerStream
+}
+
+func (st *stream) SendAndClose(response *packet.LogResponse) error {
+	// send a response
+	fmt.Printf("send and close stream. terminate session\n")
+	return nil
+}
+
+func (st *stream) Recv(response *packet.LogResponse) error { // handle
+	fmt.Printf("recv stream \n")
+	return nil
+}
+
+type writerHandler struct {
+	KafkaWriters map[string]*kafka.Writer
+	ctx context.Context
+	wg *sync.WaitGroup
+}
+
+func (wh *writerHandler) SetWriter(brokers []string,topics []string,ctx context.Context, wg *sync.WaitGroup) {
+
+	writers := make(map[string]*kafka.Writer)
+
+	for _,topic := range topics {
+
+		writer := &kafka.Writer{
+			Addr:     kafka.TCP(brokers[0]),
+			Topic:    topic,
+			Balancer: &kafka.LeastBytes{},
+		}
+
+		writers[topic] = writer
+	}
+
+	wh.KafkaWriters = writers
+
+	wh.ctx = ctx
+	wh.wg = wg
+}
+
+func (wh *writerHandler) Produce(writer *kafka.Writer, key, msg string) error {
+
+	err := writer.WriteMessages(wh.ctx,
+		kafka.Message{
+			Key:   []byte(key),
+			Value: []byte(msg),
+		},
+	)
+
+	wh.wg.Done()
+
+	return err
+}
+
+func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
+	s.StreamCount = 0
+	s.startedAt = time.Now()
+
+	for {
+		msg, err := stream.Recv()
+
+		if err == io.EOF {
+
+			timeDiff := time.Since(s.startedAt)
+
+			// todo need to close off the writers
+			// use channels maybe ?
+
+			return stream.SendAndClose(&packet.LogResponse{
+				Success:       true,
+				StreamedCount: s.StreamCount,
+				Message:       "transmission ended. reason: end of file. duration: " + timeDiff.String(),
+			})
+		}
+
+		if err != nil {
+			return err
+		}
+
+		s.StreamCount++
+
+		key := random.Str(3)
+
+		json, err := getJsonDataFromMessage(msg)
+
+		if err != nil {
+			fmt.Printf("error marshaling %v\n",err.Error())
+			return err
+		}
+
+		go func() {
+
+			for _, topic := range msg.GetTopics() {
+
+				if writer, ok := s.writerHandler.KafkaWriters[topic]; ok {
+					s.writerHandler.wg.Add(1)
+
+					err = s.writerHandler.Produce(writer,key,string(json))
+
+					if err != nil {
+						fmt.Printf("error producing : %v on topic %v\n",err,topic)
+						return
+					}
+				}
+
+			}
+
+		}()
+	}
+}
+
+func getJsonDataFromMessage(request *packet.LogRequest) ([]byte, error){
+	var data []interface{}
+
+	data = append(data,request.GetHeaders())
+	data = append(data,request.GetTopics())
+	data = append(data,request.GetPayload())
+
+	return json2.Marshal(data)
+}
+
+func main()  {
+	fmt.Printf("running server\n")
 	env.LoadEnv()
 
-	flag.StringVar(&kafkaBrokerUrl, "kafka-brokers", "localhost:9092", "Kafka brokers in comma separated value")
-	flag.StringVar(&kafkaTopic, "kafka-topic", "hello_world", "Kafka topic. Only one topic per worker.")
-	//flag.StringVar(&kafkaConsumerGroup, "kafka-consumer-group", "consumer-group", "Kafka consumer group")
-	flag.StringVar(&kafkaClientId, "kafka-client-id", "kafka_client_"+random.Str(3), "Kafka client id")
+	lis, err := net.Listen("tcp", ":" + env.Get("RPC_PORT"))
 
-	flag.Parse()
+	if err != nil {
+		fmt.Printf("error opening tcp server %v\n",err.Error())
+	}
 
-	fmt.Printf("hello")
-	return
+	s := grpc.NewServer()
 
-	signalChan := make(chan os.Signal, 1)
+	brokers := strings.Split(env.Get("KAFKA_BROKER_ADDRESS"), ",")
+	topics 	:= strings.Split(env.Get("KAFKA_TOPICS"), ",")
 
-	signal.Notify(signalChan, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-
-	go func() {
-		select {
-		case <-signalChan: // first signal, cancel context
-			cancel()
-		case <-ctx.Done():
-		}
-		<-signalChan // second signal, hard exit
-		os.Exit(1)
-	}()
-
-	brokers := strings.Split(kafkaBrokerUrl, ",")
-	topic 	:= env.Get("KAFKA_TOPIC")
+	wh := writerHandler{}
 
 	var wg sync.WaitGroup
-	wg.Add(1)
 
-	readerConfig := kafkaReader.ReaderConfig(brokers,topic,kafkaClientId)
+	wh.SetWriter(brokers,topics,ctx,&wg)
 
-	kafkaReader.Consume(*readerConfig)
+	server := server{
+		writerHandler: wh,
+	}
 
-	fmt.Println("end of the line from client")
-	wg.Wait()
+	packet.RegisterLogServiceServer(s,&server)
 
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }

@@ -63,12 +63,12 @@ cp .env.example .env
 Server will start listening on localhost:5053
 
 ```bash
-go run api/server.go
+go run cmd/server.go
 ```
 
 Client will send data to grpc
 ```bash
-go run api/client.go
+go run cmd/client.go
 ```
 
 

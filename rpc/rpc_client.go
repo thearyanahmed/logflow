@@ -25,6 +25,8 @@ func main()  {
 
  	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithBlock())
 
+ 	fmt.Println(conn,err)
+
 	if err != nil {
 		fmt.Printf("could not dial grpc\n%v\n",err.Error())
 		return
@@ -41,6 +43,7 @@ func main()  {
 
 	ctx , cancel := context.WithTimeout(context.Background(),time.Second * 20)
 	defer cancel()
+	fmt.Printf("checkpoint 2\n")
 
 	r , err := c.StreamLog(ctx)
 
@@ -59,6 +62,7 @@ func main()  {
 		fmt.Printf("error with file %v\n",err.Error())
 		return
 	}
+	fmt.Printf("checkpoint 3\n")
 
 	defer file.Close()
 
