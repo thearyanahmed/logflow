@@ -21,8 +21,6 @@ func Run()  {
 
  	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithBlock())
 
- 	fmt.Println(conn,err)
-
 	if err != nil {
 		fmt.Printf("could not dial grpc\n%v\n",err.Error())
 		return
@@ -58,14 +56,13 @@ func Run()  {
 		fmt.Printf("error with file %v\n",err.Error())
 		return
 	}
-	fmt.Printf("checkpoint 3\n")
 
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
-	var wg sync.WaitGroup
-	var mutex = sync.Mutex{}
+	wg := sync.WaitGroup{}
+	mutex := sync.Mutex{}
 
 	for scanner.Scan() {
 
@@ -74,10 +71,10 @@ func Run()  {
 		wg.Add(1)
 
 		go func(mt *sync.Mutex, wg *sync.WaitGroup) {
+			mt.Lock()
+
 			defer wg.Done()
 			defer mt.Unlock()
-
-			mt.Lock()
 
 			json, err := json2.Marshal(scanner.Text())
 
