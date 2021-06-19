@@ -41,6 +41,7 @@ message Header {
 }
 
 message LogRequest {
+  repeated string topics  = 63;
   Packet packet           = 41;
   NginxLog log            = 42;
   repeated Header headers = 43;

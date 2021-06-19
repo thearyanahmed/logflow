@@ -40,25 +40,35 @@ func (st *stream) Recv(response *packet.LogResponse) error { // handle
 }
 
 type writerHandler struct {
-	KafkaWriter *kafka.Writer
+	KafkaWriters map[string]*kafka.Writer
 	ctx context.Context
 	wg *sync.WaitGroup
 }
 
-func (wh *writerHandler) SetWriter(brokers []string,topic string,ctx context.Context, wg *sync.WaitGroup) {
+func (wh *writerHandler) SetWriter(brokers []string,topics []string,ctx context.Context, wg *sync.WaitGroup) {
 
-	wh.KafkaWriter = &kafka.Writer{
-		Addr:     kafka.TCP(brokers[0]),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
+	writers := make(map[string]*kafka.Writer)
+
+	for _,topic := range topics {
+
+		writer := &kafka.Writer{
+			Addr:     kafka.TCP(brokers[0]),
+			Topic:    topic,
+			Balancer: &kafka.LeastBytes{},
+		}
+
+		writers[topic] = writer
 	}
+
+	wh.KafkaWriters = writers
+
 	wh.ctx = ctx
 	wh.wg = wg
 }
 
-func (wh *writerHandler) Produce(key, msg string) error {
+func (wh *writerHandler) Produce(writer *kafka.Writer, key, msg string) error {
 
-	err := wh.KafkaWriter.WriteMessages(wh.ctx,
+	err := writer.WriteMessages(wh.ctx,
 		kafka.Message{
 			Key:   []byte(key),
 			Value: []byte(msg),
@@ -82,6 +92,9 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 
 			timeDiff := time.Since(s.startedAt)
 
+			// todo need to close off the writers
+			// use channels maybe ?
+
 			return stream.SendAndClose(&packet.LogResponse{
 				Success:       true,
 				StreamedCount: s.StreamCount,
@@ -95,33 +108,45 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 
 		s.StreamCount++
 
-		s.writerHandler.wg.Add(1)
+		key := random.Str(3)
+
+		json, err := getJsonDataFromMessage(msg)
+
+		if err != nil {
+			fmt.Printf("error marshaling %v\n",err.Error())
+			return err
+		}
 
 		go func() {
 
-			key := random.Str(3)
+			for _, topic := range msg.GetTopics() {
 
-			var data []interface{}
+				if writer, ok := s.writerHandler.KafkaWriters[topic]; ok {
+					s.writerHandler.wg.Add(1)
 
-			data = append(data,msg.GetPacket())
-			data = append(data,msg.GetLog())
-			data = append(data,msg.GetHeaders())
+					err = s.writerHandler.Produce(writer,key,string(json))
 
-			json, err := json2.Marshal(data)
+					if err != nil {
+						fmt.Printf("error producing : %v on topic %v\n",err,topic)
+						return
+					}
+				}
 
-			if err != nil {
-				fmt.Printf("error marshaling %v\n",err.Error())
-				return
 			}
 
-			err = s.writerHandler.Produce(key,string(json))
-
-			if err != nil {
-				fmt.Printf("error producing : %v\n",err)
-				return
-			}
 		}()
 	}
+}
+
+func getJsonDataFromMessage(request *packet.LogRequest) ([]byte, error){
+	var data []interface{}
+
+	data = append(data,request.GetPacket())
+	data = append(data,request.GetLog())
+	data = append(data,request.GetHeaders())
+	data = append(data,request.GetTopics())
+
+	return json2.Marshal(data)
 }
 
 func main()  {
@@ -137,7 +162,7 @@ func main()  {
 	s := grpc.NewServer()
 
 	brokers := strings.Split(env.Get("KAFKA_BROKER_ADDRESS"), ",")
-	topic 	:= env.Get("KAFKA_TOPIC")
+	topics 	:= strings.Split(env.Get("KAFKA_TOPICS"), ",")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -146,7 +171,7 @@ func main()  {
 
 	var wg sync.WaitGroup
 
-	wh.SetWriter(brokers,topic,ctx,&wg)
+	wh.SetWriter(brokers,topics,ctx,&wg)
 
 	server := server{
 		writerHandler: wh,

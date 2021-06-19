@@ -32,7 +32,7 @@ func main()  {
 
 	var i int32
 
-	for i = 0 ; i < 1; i++ {
+	for i = 0 ; i < 10000; i++ {
 		pckt := &packet.Packet{
 			Version:    i,
 			IvVersion:  nil,
@@ -76,6 +76,7 @@ func main()  {
 			Packet:  pckt,
 			Log:     nginxLog,
 			Headers: headers,
+			Topics: []string{"hello_world","banana_world"},
 		}
 
 		err := r.Send(&logRequest)
