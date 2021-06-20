@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/thearyanahmed/logflow/collectors/nginx"
 	"github.com/thearyanahmed/logflow/rpc/client"
 	"github.com/thearyanahmed/logflow/rpc/server"
 	"github.com/thearyanahmed/logflow/utils/env"
@@ -24,6 +25,8 @@ func main()  {
 		server.Run()
 	case "client":
 		client.Run()
+	case "collector:nginx":
+		nginx.Run()
 	case "help":
 		printHelp()
 	default:
