@@ -4,9 +4,11 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/google/gopacket"
@@ -52,9 +54,11 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 func (h *httpStream) run() {
 	buf := bufio.NewReader(&h.r)
 	for {
+
 		req, err := http.ReadRequest(buf)
 		if err == io.EOF {
 			// We must read until we see an EOF... very important!
+			fmt.Printf("endof line.")
 			return
 		} else if err != nil {
 			log.Println("Error reading stream", h.net, h.transport, ":", err)
@@ -87,6 +91,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	file, err := os.Create("./temp.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tl := 0
+
+	writer := bufio.NewWriter(file)
+
+	defer writer.Flush()
+
+
 	// Set up assembly
 	streamFactory := &httpStreamFactory{}
 	streamPool := tcpassembly.NewStreamPool(streamFactory)
@@ -97,6 +113,7 @@ func main() {
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	packets := packetSource.Packets()
 	ticker := time.Tick(time.Minute)
+
 	for {
 		select {
 		case packet := <-packets:
@@ -104,6 +121,18 @@ func main() {
 			if packet == nil {
 				return
 			}
+
+			if tl < 100 {
+
+				_, err := writer.WriteString(packet.String() + "\n")
+
+				if err != nil {
+					fmt.Println("error writing to file : " , err.Error())
+				}
+			}
+
+			tl++
+
 			if *logAllPackets {
 				log.Println(packet)
 			}
@@ -112,6 +141,7 @@ func main() {
 				continue
 			}
 			tcp := packet.TransportLayer().(*layers.TCP)
+
 			assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
 
 		case <-ticker:
@@ -119,4 +149,5 @@ func main() {
 			assembler.FlushOlderThan(time.Now().Add(time.Minute * -2))
 		}
 	}
+
 }
