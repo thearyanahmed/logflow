@@ -104,14 +104,13 @@ func main()  {
 			fmt.Printf("application layer : %v\n",app.Payload())
 		}
 
-		fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",string(packet.Data()[:]),packet.Metadata().CaptureInfo.Timestamp)
+		fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",packet.String(),packet.Metadata().CaptureInfo.Timestamp)
 
 
 		tcp := packet.TransportLayer().(*layers.TCP)
 
 		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
 	}
-
 
 
 	//for {
