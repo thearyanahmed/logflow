@@ -99,13 +99,18 @@ func main()  {
 			fmt.Printf("unstable packet. layer : %v\n",packet.LinkLayer())
 			continue
 		}
+		//
+		//if app := packet.ApplicationLayer(); app != nil {
+		//	fmt.Printf("application layer payload : %v\n",string(app.Payload()))
+		//}
 
-		if app := packet.ApplicationLayer(); app != nil {
-			fmt.Printf("application layer payload : %v\n",string(app.Payload()))
+		//fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",
+		//	packet.String(),
+		//	packet.Metadata().CaptureInfo.Timestamp,
+		//)
+		for i, l := range packet.Layers() {
+			fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
 		}
-		
-
-		fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",packet.String(),packet.Metadata().CaptureInfo.Timestamp)
 
 		// Decode all layers and return them.  The layers up to the first IPv4 layer
 		// are already decoded, and will not require decoding a second time.
