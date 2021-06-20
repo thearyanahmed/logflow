@@ -101,11 +101,14 @@ func main()  {
 		}
 
 		if app := packet.ApplicationLayer(); app != nil {
-			fmt.Printf("application layer : %v\n",app.Payload())
+			fmt.Printf("application layer payload : %v\n",string(app.Payload()))
 		}
+		
 
 		fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",packet.String(),packet.Metadata().CaptureInfo.Timestamp)
 
+		// Decode all layers and return them.  The layers up to the first IPv4 layer
+		// are already decoded, and will not require decoding a second time.
 
 		tcp := packet.TransportLayer().(*layers.TCP)
 
