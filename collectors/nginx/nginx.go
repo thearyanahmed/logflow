@@ -1,23 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/tcpassembly"
 	"github.com/google/gopacket/tcpassembly/tcpreader"
+	"io"
+	"log"
+	"net/http"
 )
-
-type dataSource struct {
-	gopacket.PacketDataSource
-}
-
-type httpStream struct {
-	net 		gopacket.Flow
-	transport   gopacket.Flow
-	r 			tcpreader.ReaderStream
-}
 
 var (
 
@@ -28,11 +23,47 @@ var (
 	logAllPackets = flag.Bool("v", false, "Logs every packet in great detail")
 )
 
+type httpStream struct {
+	net 		gopacket.Flow
+	transport   gopacket.Flow
+	r 			tcpreader.ReaderStream
+}
+
+// httpStreamFactory implements tcpassembly.StreamFactory
 type httpStreamFactory struct{}
-//
-//type httpStream struct{
-//	gopacket.StreamPool
-//}
+
+
+func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream {
+	hstream := &httpStream{
+		net:       net,
+		transport: transport,
+		r:         tcpreader.NewReaderStream(),
+	}
+	go hstream.run() // Important... we must guarantee that data from the reader stream is read.
+
+	// ReaderStream implements tcpassembly.Stream, so we can return a pointer to it.
+	return &hstream.r
+}
+
+func (h *httpStream) run() {
+	buf := bufio.NewReader(&h.r)
+	for {
+
+		req, err := http.ReadRequest(buf)
+
+		if err == io.EOF {
+			// We must read until we see an EOF... very important!
+			fmt.Printf("endof line.")
+			return
+		} else if err != nil {
+			log.Println("Error reading stream", h.net, h.transport, ":", err)
+		} else {
+			bodyBytes := tcpreader.DiscardBytesToEOF(req.Body)
+			req.Body.Close()
+			log.Println("Received request from stream", h.net, h.transport, ":", req, "with", bodyBytes, "bytes in request body")
+		}
+	}
+}
 
 func main()  {
 	flag.Parse()
@@ -55,9 +86,9 @@ func main()  {
 	}
 
 	// Set up assembly
-	//streamFactory := &httpStreamFactory{}
-	//streamPool := tcpassembly.NewStreamPool(streamFactory)
-	//assembler := tcpassembly.NewAssembler(streamPool)
+	streamFactory := &httpStreamFactory{}
+	streamPool := tcpassembly.NewStreamPool(streamFactory)
+	assembler := tcpassembly.NewAssembler(streamPool)
 
 
 	packetSource := gopacket.NewPacketSource(handle,handle.LinkType())
@@ -74,6 +105,11 @@ func main()  {
 		}
 
 		fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",string(packet.Data()[:]),packet.Metadata().CaptureInfo.Timestamp)
+
+
+		tcp := packet.TransportLayer().(*layers.TCP)
+
+		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
 	}
 
 
