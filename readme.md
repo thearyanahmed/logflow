@@ -14,7 +14,7 @@ all possible topics must be given (set in the `.env` file) before you start the 
 2. GO
 3. [Protocol Buffer](https://grpc.io/docs/protoc-installation/) for development purpose.
 
-*At the moment none we don't have the docker environments ready yet. The dependencies need to be installed manually.*
+*At the moment we don't have the docker environments ready yet. The dependencies need to be installed manually.*
 
 ## Running the Application
 
