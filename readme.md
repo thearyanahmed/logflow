@@ -140,6 +140,8 @@ There is at the moment only one flag you can pass along when running the main.go
 
 [BCC HTTP Filter](https://github.com/iovisor/bcc/tree/master/examples/networking/http_filter)
 
+[Logkit by Qiniu](https://github.com/qiniu/logkit)
+
 [NGINX log data format](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_formata)
 
 These ^ are gems
