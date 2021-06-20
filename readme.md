@@ -117,13 +117,32 @@ There is at the moment only one flag you can pass along when running the main.go
 1.  `--action` Possible values: serve, client, help. eg: `go run main.go --action serve`
 
 
-### Sources
+### Useful Resources
 
 [Enterprise Network Flow Collector (IPFIX, sFlow, Netflow) from Verizon Media](https://github.com/VerizonDigital/vflow)
 
 [The high-scalability sFlow/NetFlow/IPFIX collector used internally at Cloudflare](https://github.com/cloudflare/goflow)
 
+[GopherCon 2016: John Leon - Packet Capture, Analysis, and Injection with Go](https://www.youtube.com/watch?v=APDnbmTKjgM)
+
+[Capturing HTTP packets the hard way](https://medium.com/@cjoudrey/capturing-http-packets-the-hard-way-b9c799bfb6)
+
+[LISA16: Linux 4.X Tracing Tools: Using BPF Superpowers](https://www.youtube.com/watch?v=UmOU3I36T2U)
+
+[Sniffing Creds with Go, A Journey with libpcap](https://itnext.io/sniffing-creds-with-go-a-journey-with-libpcap-73bc3e74966)
+
+[Collecting NGINX Plus Monitoring Statistics with Go
+](https://www.nginx.com/blog/collecting-nginx-plus-monitoring-statistics-with-go/)
+
+[GoPacket by Google](https://pkg.go.dev/github.com/google/gopacket)
+
+[Packet Capture, Injection, and Analysis with Go Packet](https://www.devdungeon.com/content/packet-capture-injection-and-analysis-gopacket)
+
+[BCC HTTP Filter](https://github.com/iovisor/bcc/tree/master/examples/networking/http_filter)
+
 [NGINX log data format](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_formata)
+
+These ^ are gems
 
 ## Todos 
 - [ ] Installations & setup
