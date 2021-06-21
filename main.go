@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/thearyanahmed/logflow/collectors/nginx"
+	"github.com/thearyanahmed/logflow/collectors/file"
 	"github.com/thearyanahmed/logflow/rpc/client"
 	"github.com/thearyanahmed/logflow/rpc/server"
 	"github.com/thearyanahmed/logflow/utils/env"
@@ -24,9 +24,18 @@ func main()  {
 	case "serve":
 		server.Run()
 	case "client":
+
+		// create a client instance
+		// when creating an instance, it will create a grpc dial
+		// which will hold the connect
+		// a lock and possibly an wg
+
+		// client should have a function
+
+
 		client.Run()
-	case "collector:nginx":
-		nginx.Run()
+	case "collector:file":
+		file.Run(env.Get("TEST_DATA_FILE"))
 	case "help":
 		printHelp()
 	default:

@@ -14,6 +14,58 @@ import (
 	"time"
 )
 
+type RpcClientInterface interface {
+	Terminate() error
+}
+
+type RpcClient struct {
+	RpcClientInterface
+	lock *sync.Mutex
+	wg *sync.WaitGroup
+	Ch chan string
+	r packet.LogService_StreamLogClient
+}
+
+func NewRpcClient() (*RpcClient,error) {
+	host := env.Get("RPC_HOST") + ":" + env.Get("RPC_PORT")
+
+	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithBlock())
+
+	if err != nil {
+		return nil, err
+	}
+
+	c := packet.NewLogServiceClient(conn)
+
+	ctx := context.Background()
+
+	r , err := c.StreamLog(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	wg := sync.WaitGroup{}
+	mutex := sync.Mutex{}
+
+	ch := make(chan string,100)
+
+	rpcClient := RpcClient{
+		lock:               &mutex,
+		wg:                 &wg,
+		Ch:                 ch,
+		r:                  r,
+	}
+
+	return &rpcClient,nil
+}
+
+
+func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
+
+	return rc.r.CloseAndRecv()
+}
+
 func Run()  {
 	fmt.Printf("running client\n")
 
@@ -111,3 +163,5 @@ func Run()  {
 
 	fmt.Printf("\nstream count :%v\nmsg : %v\n",reply.GetStreamedCount(),reply.GetMessage())
 }
+
+
