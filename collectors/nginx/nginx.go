@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
+	_ "github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/pfring"
 	"github.com/google/gopacket/tcpassembly"
 	"github.com/google/gopacket/tcpassembly/tcpreader"
 	"io"
@@ -74,10 +75,12 @@ func main()  {
 
 	fmt.Printf("running nginx collector \n args: iface %v\t fname %v\t snaplen %v\t filter %v\t logAllPackets %v\n",*iface,*fname,*snaplen,*filter,*logAllPackets)
 
-	var handle *pcap.Handle
+	var handle *pfring.Ring
 	var err error
 
-	handle, err = pcap.OpenLive(*iface, int32(*snaplen), true, pcap.BlockForever)
+	handle, err = pfring.NewRing(*iface, uint32(*snaplen),pfring.FlagPromisc)
+
+	//handle, err = pcap.OpenLive(*iface, int32(*snaplen), true, pcap.BlockForever)
 
 	if err != nil {
 		fmt.Printf("could not open connection %v\n",err.Error())
@@ -91,11 +94,10 @@ func main()  {
 
 	// Set up assembly
 	streamFactory := &httpStreamFactory{}
-	streamPool := tcpassembly.NewStreamPool(streamFactory)
-	assembler := tcpassembly.NewAssembler(streamPool)
+	streamPool    := tcpassembly.NewStreamPool(streamFactory)
+	assembler 	  := tcpassembly.NewAssembler(streamPool)
 
-
-	packetSource := gopacket.NewPacketSource(handle,handle.LinkType())
+	packetSource := gopacket.NewPacketSource(handle,layers.LinkTypeNull)
 
 	for packet := range packetSource.Packets() {
 		//fmt.Printf("%v\n",packet.)
@@ -103,33 +105,14 @@ func main()  {
 			fmt.Printf("unstable packet. layer : %v\n",packet.LinkLayer())
 			continue
 		}
-		//
-
-		//fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",
-		//	packet.String(),
-		//	packet.Metadata().CaptureInfo.Timestamp,
-		//)
-
-		// Decode all layers and return them.  The layers up to the first IPv4 layer
-		// are already decoded, and will not require decoding a second time.
 
 		tcp := packet.TransportLayer().(*layers.TCP)
 
 		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
-		
-		if transport := packet.TransportLayer(); transport != nil {
 
-			fmt.Printf("transportlication layer packet payload : %v\n transportlication layer LayerPayload %v\n",
-				string(transport.LayerContents()),
-				string(transport.LayerPayload()),
-			)
+		for i, l := range packet.Layers()  {
+			fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
 		}
-
-		//for i, l := range packet.Layers()  {
-		//	if i + 1 == 7 {
-		//		fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
-		//	}
-		//}
 	}
 
 
