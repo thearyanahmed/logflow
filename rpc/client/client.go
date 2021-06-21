@@ -59,7 +59,6 @@ func NewRpcClient() (*RpcClient,error) {
 	return &rpcClient,nil
 }
 
-
 func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
 	rc.lock.Lock()
 	defer rc.wg.Done()
@@ -69,7 +68,7 @@ func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
 }
 
 func (rc *RpcClient) Wait() {
-	rc.wg.Done()
+	rc.wg.Wait()
 }
 
 func (rc *RpcClient) Add() {
@@ -78,6 +77,7 @@ func (rc *RpcClient) Add() {
 
 func (rc *RpcClient) Send(data string) error {
 	rc.lock.Lock()
+
 	defer rc.wg.Done()
 	defer rc.lock.Unlock()
 

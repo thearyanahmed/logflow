@@ -53,8 +53,6 @@ func (c *collector) Read(ch chan<- string, wg *sync.WaitGroup) {
 			//return
 		//}
 	}
-
-
 }
 
 

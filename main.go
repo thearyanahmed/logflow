@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/thearyanahmed/logflow/collectors"
 	"github.com/thearyanahmed/logflow/collectors/file"
+	"github.com/thearyanahmed/logflow/rpc/client"
 	"github.com/thearyanahmed/logflow/rpc/server"
 	"github.com/thearyanahmed/logflow/utils/env"
 	"log"
@@ -45,39 +46,56 @@ func main()  {
 			log.Fatalf("error creating collector %v\n",err.Error())
 		}
 
+		rpcClient , err := client.NewRpcClient()
+
+		if err != nil {
+			log.Fatalf("%v\n",err.Error())
+		}
+
 		wg := sync.WaitGroup{}
 		wg.Add(1)
 
 		chOpen := true
 
 		go collector.Read(ch,&wg)
+		
+		wg.Wait()
 
 		for chOpen {
 			select {
-			case xLine, open := <- ch:
-				fmt.Printf("line : %v\n",xLine)
-
-				fmt.Printf("open %v\n",open)
-
-
+			case line, open := <- ch:
 				if open == false {
 					chOpen = false
+					break
 				}
+
+				rpcClient.Add()
+
+				go func() {
+					err := rpcClient.Send(line)
+
+					if err != nil {
+						close(c)
+						chOpen = false
+						return
+					}
+				}()
+
+
 			}
 		}
 
+		rpcClient.Wait()
 
-		fmt.Printf("\ndone\n")
-		wg.Wait()
-		// create a client instance
-		// when creating an instance, it will create a grpc dial
-		// which will hold the connect
-		// a lock and possibly an wg
+		resp, err := rpcClient.Terminate()
 
-		// client should have a function
+		if err != nil {
+
+		}
 
 
-		//client.Run()
+
+
 
 	case "help":
 		printHelp()
