@@ -58,14 +58,16 @@ func main()  {
 		chOpen := true
 
 		go collector.Read(ch,&wg)
-		
-		wg.Wait()
 
 		for chOpen {
 			select {
 			case line, open := <- ch:
+
+				fmt.Printf("%v\n%v\n",line,open)
+
 				if open == false {
 					chOpen = false
+					fmt.Printf("channel closed.\n")
 					break
 				}
 
@@ -75,27 +77,31 @@ func main()  {
 					err := rpcClient.Send(line)
 
 					if err != nil {
-						close(c)
-						chOpen = false
+						fmt.Printf("send error %v.\n",err.Error())
 						return
 					}
+
+					fmt.Printf("request sent\n")
 				}()
-
-
 			}
 		}
 
+		fmt.Printf("before wait")
+
 		rpcClient.Wait()
+
+		fmt.Printf("waiting on rpc")
+
+		wg.Wait()
 
 		resp, err := rpcClient.Terminate()
 
 		if err != nil {
-
+			fmt.Printf("err terminating response %v\n",err.Error())
+			return
 		}
 
-
-
-
+		fmt.Printf("response terminated \n stream count %v\n msg %v\n",resp.GetStreamedCount(),resp.GetMessage())
 
 	case "help":
 		printHelp()

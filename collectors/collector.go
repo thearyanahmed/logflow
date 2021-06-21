@@ -10,4 +10,6 @@ type CollectorInterface interface {
 	Read(ch chan string, wg *sync.WaitGroup)
 
 	FKill(reason string) error
+
+	sync.Locker
 }

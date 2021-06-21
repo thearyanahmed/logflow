@@ -10,6 +10,7 @@ import (
 type collector struct {
 	tail *tail.Tail
 	collectors.CollectorInterface
+	lock *sync.Mutex
 }
 
 func NewCollector(options collectors.CollectorOptions) (*collector,chan string,error) {
@@ -28,20 +29,27 @@ func NewCollector(options collectors.CollectorOptions) (*collector,chan string,e
 		return nil, nil,err
 	}
 
+	lock := sync.Mutex{}
+
 	c := &collector{
 		tail: t,
+		lock: &lock,
 	}
 
 	ch := make(chan string)
 
-	return c, ch, err
+	return c, ch, nil
 }
 
 func (c *collector) Read(ch chan<- string, wg *sync.WaitGroup) {
+	c.lock.Lock()
+
+	defer c.lock.Unlock()
+	defer wg.Done()
+	defer close(ch)
 
 	defer c.tail.Done()
-	defer close(ch)
-	defer wg.Done()
+	defer c.tail.Cleanup()
 
 	//var err error
 

@@ -60,6 +60,8 @@ func NewRpcClient() (*RpcClient,error) {
 }
 
 func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
+	fmt.Printf("terminating response 1")
+	fmt.Printf("terminating response 2")
 	rc.lock.Lock()
 	defer rc.wg.Done()
 	defer rc.lock.Unlock()
