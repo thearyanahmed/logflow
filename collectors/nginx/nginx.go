@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	_ "github.com/google/gopacket/pcap"
-	"github.com/google/gopacket/pfring"
+	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/tcpassembly"
 	"github.com/google/gopacket/tcpassembly/tcpreader"
 	"io"
@@ -75,12 +74,10 @@ func main()  {
 
 	fmt.Printf("running nginx collector \n args: iface %v\t fname %v\t snaplen %v\t filter %v\t logAllPackets %v\n",*iface,*fname,*snaplen,*filter,*logAllPackets)
 
-	var handle *pfring.Ring
+	var handle *pcap.Handle
 	var err error
-
-	handle, err = pfring.NewRing(*iface, uint32(*snaplen),pfring.FlagPromisc)
-
-	//handle, err = pcap.OpenLive(*iface, int32(*snaplen), true, pcap.BlockForever)
+	
+	handle, err = pcap.OpenLive(*iface, int32(*snaplen), true, pcap.BlockForever)
 
 	if err != nil {
 		fmt.Printf("could not open connection %v\n",err.Error())
@@ -97,7 +94,7 @@ func main()  {
 	streamPool    := tcpassembly.NewStreamPool(streamFactory)
 	assembler 	  := tcpassembly.NewAssembler(streamPool)
 
-	packetSource := gopacket.NewPacketSource(handle,layers.LinkTypeNull)
+	packetSource := gopacket.NewPacketSource(handle,handle.LinkType())
 
 	for packet := range packetSource.Packets() {
 		//fmt.Printf("%v\n",packet.)
