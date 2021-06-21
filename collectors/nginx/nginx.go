@@ -64,7 +64,8 @@ func (h *httpStream) run() {
 		} else {
 			bodyBytes := tcpreader.DiscardBytesToEOF(req.Body)
 			req.Body.Close()
-			log.Println("Received request from stream", h.net, h.transport, ":", req, "with", bodyBytes, "bytes in request body")
+			fmt.Printf("Received request from stream \n net: %v\n transport %v\n request %v body bytes %v\n",
+				h.net, h.transport,req, bodyBytes)
 		}
 	}
 }
@@ -111,14 +112,10 @@ func main()  {
 		//	fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
 		//}
 
-		fmt.Printf("packet %v\n\n\n",packet.String())
-
-		if transport := packet.TransportLayer(); transport != nil {
-			fmt.Printf("transport layer %v\n\n\n",transport.LayerPayload())
-		}
-
-		if appLayer := packet.ApplicationLayer(); appLayer != nil {
-			fmt.Printf("applicaiton layer %v\n\n\n",appLayer.LayerPayload())
-		}
+		//fmt.Printf("packet %v\n\n\n",packet.String())
+		//
+		//if appLayer := packet.ApplicationLayer(); appLayer != nil {
+		//	fmt.Printf("applicaiton layer %v\n\n\n",appLayer.LayerPayload())
+		//}
 	}
 }
