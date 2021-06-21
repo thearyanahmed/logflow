@@ -113,15 +113,15 @@ func main()  {
 		// Decode all layers and return them.  The layers up to the first IPv4 layer
 		// are already decoded, and will not require decoding a second time.
 
-		if app := packet.ApplicationLayer(); app != nil {
+		if transport := packet.TransportLayer(); transport != nil {
 
 			tcp := packet.TransportLayer().(*layers.TCP)
 
 			assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
 
-			fmt.Printf("application layer packet payload : %v\n application layer LayerPayload %v\n",
-				string(app.Payload()),
-				string(app.LayerPayload()),
+			fmt.Printf("transportlication layer packet payload : %v\n transportlication layer LayerPayload %v\n",
+				string(transport.LayerContents()),
+				string(transport.LayerPayload()),
 			)
 		}
 
