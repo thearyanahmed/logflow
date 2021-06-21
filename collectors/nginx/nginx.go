@@ -120,15 +120,5 @@ func main()  {
 		if appLayer := packet.ApplicationLayer(); appLayer != nil {
 			fmt.Printf("applicaiton layer %v\n\n\n",appLayer.LayerPayload())
 		}
-
-
-	//for {
-	//	select {
-	//	case packet := <-packets:
-	//		if packet == nil {
-	//			fmt.Printf("nil packet,end of pcap file, if we are using it\n")
-	//			return
-	//		}
-	//	}
-	//}
+	}
 }
