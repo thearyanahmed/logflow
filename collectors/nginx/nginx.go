@@ -47,6 +47,10 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 
 func (h *httpStream) run() {
 	buf := bufio.NewReader(&h.r)
+
+	h.transport.String()
+
+
 	for {
 
 		req, err := http.ReadRequest(buf)
@@ -100,9 +104,6 @@ func main()  {
 			continue
 		}
 		//
-		//if app := packet.ApplicationLayer(); app != nil {
-		//	fmt.Printf("application layer payload : %v\n",string(app.Payload()))
-		//}
 
 		//fmt.Printf("packet data: %v\n packet metadata timestamp: %v\n",
 		//	packet.String(),
@@ -112,15 +113,23 @@ func main()  {
 		// Decode all layers and return them.  The layers up to the first IPv4 layer
 		// are already decoded, and will not require decoding a second time.
 
-		tcp := packet.TransportLayer().(*layers.TCP)
+		if app := packet.ApplicationLayer(); app != nil {
 
-		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
+			tcp := packet.TransportLayer().(*layers.TCP)
 
-		for i, l := range packet.Layers()  {
-			if i + 1 == 4 || i + 1 == 7 {
-				fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
-			}
+			assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
+
+			fmt.Printf("application layer packet payload : %v\n application layer LayerPayload %v\n",
+				string(app.Payload()),
+				string(app.LayerPayload()),
+			)
 		}
+
+		//for i, l := range packet.Layers()  {
+		//	if i + 1 == 7 {
+		//		fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
+		//	}
+		//}
 	}
 
 
