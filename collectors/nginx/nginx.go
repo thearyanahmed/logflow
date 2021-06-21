@@ -48,7 +48,7 @@ func (h *httpStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream
 func (h *httpStream) run() {
 	buf := bufio.NewReader(&h.r)
 
-	h.transport.String()
+	fmt.Printf("transport :%v\n\n",h.transport.String())
 
 
 	for {
@@ -76,7 +76,7 @@ func main()  {
 
 	var handle *pcap.Handle
 	var err error
-	
+
 	handle, err = pcap.OpenLive(*iface, int32(*snaplen), true, pcap.BlockForever)
 
 	if err != nil {
@@ -106,11 +106,20 @@ func main()  {
 		tcp := packet.TransportLayer().(*layers.TCP)
 
 		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
+		//
+		//for i, l := range packet.Layers()  {
+		//	fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
+		//}
 
-		for i, l := range packet.Layers()  {
-			fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
+		fmt.Printf("packet %v\n\n\n",packet.String())
+
+		if transport := packet.TransportLayer(); transport != nil {
+			fmt.Printf("transport layer %v\n\n\n",transport.LayerPayload())
 		}
-	}
+
+		if appLayer := packet.ApplicationLayer(); appLayer != nil {
+			fmt.Printf("applicaiton layer %v\n\n\n",appLayer.LayerPayload())
+		}
 
 
 	//for {
