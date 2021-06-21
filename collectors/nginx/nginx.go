@@ -108,9 +108,6 @@ func main()  {
 		//	packet.String(),
 		//	packet.Metadata().CaptureInfo.Timestamp,
 		//)
-		for i, l := range packet.Layers() {
-			fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
-		}
 
 		// Decode all layers and return them.  The layers up to the first IPv4 layer
 		// are already decoded, and will not require decoding a second time.
@@ -118,6 +115,12 @@ func main()  {
 		tcp := packet.TransportLayer().(*layers.TCP)
 
 		assembler.AssembleWithTimestamp(packet.NetworkLayer().NetworkFlow(), tcp, packet.Metadata().Timestamp)
+
+		for i, l := range packet.Layers()  {
+			if i + 1 == 4 || i + 1 == 7 {
+				fmt.Printf( "- Layer %d (%02d bytes) = %s\n", i+1, len(l.LayerContents()), gopacket.LayerString(l))
+			}
+		}
 	}
 
 
