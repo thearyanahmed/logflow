@@ -15,14 +15,16 @@ import (
 )
 
 type RpcClientInterface interface {
+	Send(data string) error
 	Terminate() error
+	Wait()
+	Add()
 }
 
 type RpcClient struct {
 	RpcClientInterface
 	lock *sync.Mutex
 	wg *sync.WaitGroup
-	Ch chan string
 	r packet.LogService_StreamLogClient
 }
 
@@ -48,12 +50,9 @@ func NewRpcClient() (*RpcClient,error) {
 	wg := sync.WaitGroup{}
 	mutex := sync.Mutex{}
 
-	ch := make(chan string,100)
-
 	rpcClient := RpcClient{
 		lock:               &mutex,
 		wg:                 &wg,
-		Ch:                 ch,
 		r:                  r,
 	}
 
@@ -62,9 +61,51 @@ func NewRpcClient() (*RpcClient,error) {
 
 
 func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
+	rc.lock.Lock()
+	defer rc.wg.Done()
+	defer rc.lock.Unlock()
 
 	return rc.r.CloseAndRecv()
 }
+
+func (rc *RpcClient) Wait() {
+	rc.wg.Done()
+}
+
+func (rc *RpcClient) Add() {
+	rc.wg.Add(1)
+}
+
+func (rc *RpcClient) Send(data string) error {
+	rc.lock.Lock()
+	defer rc.wg.Done()
+	defer rc.lock.Unlock()
+
+	json, err := json2.Marshal(data)
+
+	logRequest := packet.LogRequest{
+		Topics: []string{"hello_world"}, // todo handle topic
+		Payload: json,
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return rc.r.Send(&logRequest)
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 func Run()  {
 	fmt.Printf("running client\n")

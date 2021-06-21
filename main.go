@@ -3,10 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/thearyanahmed/logflow/collectors"
 	"github.com/thearyanahmed/logflow/collectors/file"
-	"github.com/thearyanahmed/logflow/rpc/client"
 	"github.com/thearyanahmed/logflow/rpc/server"
 	"github.com/thearyanahmed/logflow/utils/env"
+	"log"
+	"os"
+	"sync"
 )
 
 var (
@@ -25,6 +28,47 @@ func main()  {
 		server.Run()
 	case "client":
 
+		rootDir, err := os.Getwd()
+
+		if err != nil {
+			log.Fatalf("could not open directory. %v\n",err.Error())
+		}
+
+		rootDir = rootDir + "/" + env.Get("TEST_DATA_FILE")
+
+		// create collectorOptions for creating collector
+		collOpts := collectors.CollectorOptions{FilePath: rootDir}
+
+		collector, ch , err := file.NewCollector(collOpts)
+
+		if err != nil {
+			log.Fatalf("error creating collector %v\n",err.Error())
+		}
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
+		chOpen := true
+
+		go collector.Read(ch,&wg)
+
+		for chOpen {
+			select {
+			case xLine, open := <- ch:
+				fmt.Printf("line : %v\n",xLine)
+
+				fmt.Printf("open %v\n",open)
+
+
+				if open == false {
+					chOpen = false
+				}
+			}
+		}
+
+
+		fmt.Printf("\ndone\n")
+		wg.Wait()
 		// create a client instance
 		// when creating an instance, it will create a grpc dial
 		// which will hold the connect
@@ -33,9 +77,8 @@ func main()  {
 		// client should have a function
 
 
-		client.Run()
-	case "collector:file":
-		file.Run(env.Get("TEST_DATA_FILE"))
+		//client.Run()
+
 	case "help":
 		printHelp()
 	default:
