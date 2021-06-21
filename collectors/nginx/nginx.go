@@ -50,7 +50,6 @@ func (h *httpStream) run() {
 
 	fmt.Printf("transport :%v\n\n",h.transport.String())
 
-
 	for {
 
 		req, err := http.ReadRequest(buf)
