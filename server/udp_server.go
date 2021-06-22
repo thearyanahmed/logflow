@@ -1,19 +1,27 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"github.com/thearyanahmed/logflow/rpc/client"
 	"net"
 	"os"
-	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
+
+var rpcClient *client.RpcClient
+
 func main() {
+
+	var err error
+
+	rpcClient, err = client.NewRpcClient()
+
+	if err != nil {
+		fmt.Printf("could not connect to rpc, %v\n",err.Error())
+		os.Exit(1)
+	}
 
 	if err := serve(context.Background(), ":6060"); err != nil {
 		os.Exit(1)
@@ -46,48 +54,43 @@ func serve(ctx context.Context, address string) error {
 				errChan <- err
 				return
 			}
+			fmt.Printf("req : %v\n", string(buffer))
 
-			request, err := toAccessLog(buffer)
+			rpcClient.Add()
+
+			err = rpcClient.Send(string(buffer))
+
 			if err != nil {
-				errChan <- err
 				return
 			}
-			log.Info("%+v", request)
 		}
 	}()
+
+	rpcClient.Wait()
 
 	var ret error
 	select {
 	case <-ctx.Done():
 		ret = ctx.Err()
 		log.Infof("cancelled with '%v'", err)
+
+		terminate(errChan)
 	case ret = <-errChan:
+		terminate(errChan) // bleh
+
 	}
 
 	return ret
 }
 
-type accessLog struct {
-	MethodPathProtocol string `json:"request"`
-	StatusCode         string `json:"status_code"`
-	Connection         string `json:"connection"`
-}
+func terminate(errChan chan<- error) {
+	reply , err := rpcClient.Terminate()
 
-func toAccessLog(accessLogRequest []byte) (*accessLog, error) {
-
-	const substr = `{"time":`
-	start := strings.Index(string(accessLogRequest), substr)
-	if start < 0 {
-		msg := fmt.Sprintf("failed to find access-log request JSON '%s' starting with '%s'", string(accessLogRequest), substr)
-		log.Error(msg)
-		return nil, errors.New(msg)
-	}
-	var ret accessLog
-	err := json.Unmarshal(bytes.Trim([]byte(string(accessLogRequest)[start:]), "\x00"), &ret)
 	if err != nil {
-		log.Errorf("failed to unmarshal access-log '%s' with '%v'", string(accessLogRequest)[start:], err)
-		return nil, err
+		log.Fatalf("error reply %v\n",err.Error())
+		errChan <- err
+	} else {
+		fmt.Printf("Reply %v\n : %v\n",reply.GetStreamedCount(),reply.GetMessage())
+		fmt.Printf("Session terminated")
 	}
-
-	return &ret, nil
 }

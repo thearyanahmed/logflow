@@ -69,6 +69,7 @@ func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
 	return rc.r.CloseAndRecv()
 }
 
+// rethink these
 func (rc *RpcClient) Wait() {
 	rc.wg.Wait()
 }
@@ -97,13 +98,6 @@ func (rc *RpcClient) Send(data string) error {
 	return rc.r.Send(&logRequest)
 
 }
-
-
-
-
-
-
-
 
 
 
