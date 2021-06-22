@@ -4,3 +4,5 @@ local.readme.md
 pb/*.pb.go
 .DS_Store
 **/*.DS_Store
+
+data/vol
