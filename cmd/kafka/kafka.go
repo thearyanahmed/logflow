@@ -4,8 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/segmentio/kafka-go"
+	"github.com/thearyanahmed/logflow/utils/env"
 	"time"
 )
+
+type WriterInterface interface {
+	Writer(brokers []string,topic string) *kafka.Writer
+	Produce(w *kafka.Writer, ctx context.Context, key, msg string) error
+}
 
 func ReaderConfig(brokers []string,kafkaTopic ,kafkaClientId string) *kafka.ReaderConfig {
 	// make a new reader that consumes from topic-A
@@ -38,7 +44,26 @@ func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 	}
 }
 
-type WriterInterface interface {
-	Writer(brokers []string,topic string) *kafka.Writer
-	Produce(w *kafka.Writer, ctx context.Context, key, msg string) error
+// TODO update 
+func GetTopics() {
+
+	conn, err := kafka.Dial("tcp", env.Get("KAFKA_BROKER_ADDRESS"))
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	partitions, err := conn.ReadPartitions()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	m := map[string]struct{}{}
+
+	for _, p := range partitions {
+		m[p.Topic] = struct{}{}
+	}
+	for k := range m {
+		fmt.Println(k)
+	}
 }

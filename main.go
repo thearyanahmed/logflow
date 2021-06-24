@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/thearyanahmed/logflow/cmd/kafka"
 	"github.com/thearyanahmed/logflow/rpc/server"
 	"github.com/thearyanahmed/logflow/utils/env"
 )
@@ -23,6 +24,8 @@ func main()  {
 		server.Run()
 	case "client":
 		fmt.Printf("run client")
+	case "kafka:topics":
+		kafka.GetTopics()
 	case "help":
 		printHelp()
 	default:
