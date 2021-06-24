@@ -5,4 +5,4 @@ pb/*.pb.go
 .DS_Store
 **/*.DS_Store
 
-data/vol
+docker/data/vol
