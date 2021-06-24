@@ -44,7 +44,7 @@ func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 	}
 }
 
-// TODO update 
+// TODO update
 func GetTopics() {
 
 	conn, err := kafka.Dial("tcp", env.Get("KAFKA_BROKER_ADDRESS"))
