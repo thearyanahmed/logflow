@@ -154,6 +154,7 @@ func Run()  {
 
 	if err != nil {
 		fmt.Printf("error opening tcp server %v\n",err.Error())
+		return
 	}
 
 	s := grpc.NewServer()
