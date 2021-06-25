@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"github.com/thearyanahmed/logflow/utils/env"
 	"net"
 	"strconv"
 	"time"
@@ -49,9 +48,7 @@ func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 // GetTopics TODO update
 func GetTopics() {
 
-	conn, err := kafka.Dial("tcp", env.Get("KAFKA_BROKER_ADDRESS"))
-
-	fmt.Println(env.Get("KAFKA_BROKER_ADDRESS"))
+	conn, err := kafka.Dial("tcp", "kafka:29092")
 
 	if err != nil {
 		panic(err.Error())
@@ -77,7 +74,7 @@ func CreateATopic() {
 	// to create topics when auto.create.topics.enable='false'
 	topic := "hello_world"
 
-	conn, err := kafka.Dial("tcp", env.Get("KAFKA_BROKER_ADDRESS"))
+	conn, err := kafka.Dial("tcp", "localhost:9092")
 	if err != nil {
 		panic(err.Error())
 	}
