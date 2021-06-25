@@ -48,15 +48,19 @@ func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 // GetTopics TODO update
 func GetTopics() {
 
-	conn, err := kafka.Dial("tcp", "kafka:29092")
+	fmt.Printf("action: get topics \n")
+	conn, err := kafka.Dial("tcp", "kafka:9092")
 
 	if err != nil {
+		fmt.Printf("erorr getting topic connecton, %v\n",err.Error())
 		panic(err.Error())
 	}
 	defer conn.Close()
 
 	partitions, err := conn.ReadPartitions()
+
 	if err != nil {
+		fmt.Printf("erorr reading topic partition, %v\n",err.Error())
 		panic(err.Error())
 	}
 
@@ -65,16 +69,25 @@ func GetTopics() {
 	for _, p := range partitions {
 		m[p.Topic] = struct{}{}
 	}
+
+	count := 0
 	for k := range m {
 		fmt.Println(k)
+		count++
 	}
+
+	if count == 0 {
+		CreateATopic()
+	}
+
+	fmt.Printf("done\n")
 }
 
 func CreateATopic() {
 	// to create topics when auto.create.topics.enable='false'
 	topic := "hello_world"
 
-	conn, err := kafka.Dial("tcp", "localhost:9092")
+	conn, err := kafka.Dial("tcp", "kafka:9092")
 	if err != nil {
 		panic(err.Error())
 	}
