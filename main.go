@@ -26,6 +26,8 @@ func main()  {
 		fmt.Printf("run client")
 	case "kafka:topics":
 		kafka.GetTopics()
+	case "kafka:ct":
+		kafka.CreateATopic()
 	case "help":
 		printHelp()
 	default:

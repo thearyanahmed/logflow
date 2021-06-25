@@ -48,6 +48,9 @@ func Consume(config kafka.ReaderConfig) /*(kafka.Message,error)*/ {
 func GetTopics() {
 
 	conn, err := kafka.Dial("tcp", env.Get("KAFKA_BROKER_ADDRESS"))
+
+	fmt.Println(env.Get("KAFKA_BROKER_ADDRESS"))
+
 	if err != nil {
 		panic(err.Error())
 	}
@@ -66,4 +69,13 @@ func GetTopics() {
 	for k := range m {
 		fmt.Println(k)
 	}
+}
+
+func CreateATopic() {
+	_, err := kafka.DialLeader(context.Background(), "tcp", env.Get("KAFKA_BROKER_ADDRESS"), "hello_world", 0)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	GetTopics()
 }
