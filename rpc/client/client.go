@@ -31,11 +31,16 @@ type RpcClient struct {
 func NewRpcClient() (*RpcClient,error) {
 	host := env.Get("RPC_HOST") + ":" + env.Get("RPC_PORT")
 
+	fmt.Printf("trying to connect %v\n",host)
+
 	conn, err := grpc.Dial(host, grpc.WithInsecure(), grpc.WithBlock())
 
 	if err != nil {
+		fmt.Printf("error occured %v %v\n",host,err.Error())
 		return nil, err
 	}
+
+	fmt.Printf("connected to %v\n",host)
 
 	c := packet.NewLogServiceClient(conn)
 
@@ -69,7 +74,7 @@ func (rc *RpcClient) Terminate() (*packet.LogResponse, error) {
 	return rc.r.CloseAndRecv()
 }
 
-// rethink these
+// Wait rethink these
 func (rc *RpcClient) Wait() {
 	rc.wg.Wait()
 }

@@ -6,15 +6,26 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile
     volumes:
-    - .:/go/src/logflow
+      - .:/go/src/logflow
+    ports:
+      - 6060:6060
+      - 5053:5053
+    networks:
+      - log_connect
+    expose:
+      - 6060/udp
 
   nginx:
     image: nginx:1.21.0-alpine
     volumes:
-    - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    - ./docker/nginx/src:/usr/share/nginx/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf #:ro
+      - ./docker/nginx/src:/usr/share/nginx/html
     ports:
-    - 8085:8085
+      - 8085:8085
+    networks:
+      - log_connect
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -36,3 +47,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+networks:
+  log_connect:
+    driver: bridge

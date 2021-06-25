@@ -129,10 +129,10 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 						fmt.Printf("error producing : %v on topic %v\n",err,topic)
 						return
 					}
+
+					fmt.Printf("data written. %v\n",string(json))
 				}
-
 			}
-
 		}()
 	}
 }

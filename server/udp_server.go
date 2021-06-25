@@ -5,16 +5,22 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/thearyanahmed/logflow/rpc/client"
+	"github.com/thearyanahmed/logflow/utils/env"
 	"net"
 	"os"
 )
 
-
 var rpcClient *client.RpcClient
+
+func init() {
+	env.LoadEnv()
+}
 
 func main() {
 
 	var err error
+
+	fmt.Printf("starting udp server\n")
 
 	rpcClient, err = client.NewRpcClient()
 
@@ -26,12 +32,16 @@ func main() {
 	if err := serve(context.Background(), ":6060"); err != nil {
 		os.Exit(1)
 	}
+
+	fmt.Printf("end of line main func udp server")
 }
 
 // serve is capable of answering to a single client at a time
 func serve(ctx context.Context, address string) error {
 
-	pc, err := net.ListenPacket("udp", address)
+	fmt.Printf("connecting to server\n")
+
+	pc, err := net.ListenPacket("tcp", address)
 	if err != nil {
 		log.Errorf("failed to UDP listen on '%s' with '%v'", address, err)
 		return err
@@ -60,9 +70,14 @@ func serve(ctx context.Context, address string) error {
 
 			err = rpcClient.Send(string(buffer))
 
+			fmt.Printf("log: %v\n",string(buffer))
+
 			if err != nil {
+				fmt.Printf("error sending log")
 				return
 			}
+			fmt.Printf("data sent")
+
 		}
 	}()
 
