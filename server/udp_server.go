@@ -41,7 +41,7 @@ func serve(ctx context.Context, address string) error {
 
 	fmt.Printf("connecting to server\n")
 
-	pc, err := net.ListenPacket("tcp", address)
+	pc, err := net.ListenPacket("udp", address)
 	if err != nil {
 		log.Errorf("failed to UDP listen on '%s' with '%v'", address, err)
 		return err

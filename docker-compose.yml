@@ -16,7 +16,7 @@ services:
       - 6060/udp
 
   nginx:
-    image: nginx:1.21.0-alpine
+    image: nginx:latest
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf #:ro
       - ./docker/nginx/src:/usr/share/nginx/html
@@ -24,7 +24,6 @@ services:
       - 8085:8085
     networks:
       - log_connect
-
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

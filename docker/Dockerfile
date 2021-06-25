@@ -11,4 +11,4 @@ ENV PORT 8080
 EXPOSE 8080
 EXPOSE 6060/udp
 
-CMD ["sh", "-c", "go run main.go --action serve; go run server/udp_server.go; echo 'started udp server'; "]
+CMD ["sh", "-c", "go run main.go --action serve & go run server/udp_server.go; echo 'started udp server'; "]
