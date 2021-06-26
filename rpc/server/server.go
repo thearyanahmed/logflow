@@ -120,6 +120,8 @@ func (s *server) StreamLog(stream packet.LogService_StreamLogServer) error{
 
 			for _, topic := range msg.GetTopics() {
 
+				fmt.Printf("topic: %v\n",topic)
+
 				if writer, ok := s.writerHandler.KafkaWriters[topic]; ok {
 					s.writerHandler.wg.Add(1)
 

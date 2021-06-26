@@ -77,6 +77,8 @@ func GetTopics() {
 	}
 
 	if count == 0 {
+		fmt.Printf("number of topics are zero \n")
+
 		CreateATopic()
 	}
 
