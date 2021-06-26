@@ -64,11 +64,8 @@ To start the client, you can type
 go run main.go --action client
 ```
 
-**Note** Before running the client, make sure you have ZooKeeper and Kafka running.
+**Note** Before running the client, make sure you have **ZooKeeper** and **Kafka** running, and the **topics** have been created.
 
-If everything was successful, you'll have an output like
-
-![Consumer](images/consumer.png?raw=true "Kafka Consumers")
 
 **Note** The program is at an very early stage.
 

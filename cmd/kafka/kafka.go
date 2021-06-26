@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/segmentio/kafka-go"
+	"github.com/thearyanahmed/logflow/utils/env"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -78,18 +80,14 @@ func GetTopics() {
 
 	if count == 0 {
 		fmt.Printf("number of topics are zero \n")
-
-		CreateATopic()
 	}
-
-	fmt.Printf("done\n")
 }
 
 func CreateATopic() {
 	// to create topics when auto.create.topics.enable='false'
-	topic := "hello_world"
+	kafkaBroker := env.Get("KAFKA_BROKER_ADDRESS")
 
-	conn, err := kafka.Dial("tcp", "kafka:9092")
+	conn, err := kafka.Dial("tcp", kafkaBroker)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -107,16 +105,22 @@ func CreateATopic() {
 	}
 	defer controllerConn.Close()
 
+	topics := env.Get("KAFKA_TOPICS")
 
-	topicConfigs := []kafka.TopicConfig{
-		{
-			Topic:             topic,
-			NumPartitions:     1,
-			ReplicationFactor: 1,
-		},
+	topicsArray := strings.Split(topics,",")
+
+	var topicConfig []kafka.TopicConfig
+
+	for _, top := range topicsArray {
+		topicConfig = append(topicConfig,kafka.TopicConfig{
+			Topic:              top,
+			NumPartitions:      1,
+			ReplicationFactor:  1,
+		})
 	}
 
-	err = controllerConn.CreateTopics(topicConfigs...)
+
+	err = controllerConn.CreateTopics(topicConfig...)
 	if err != nil {
 		panic(err.Error())
 	}

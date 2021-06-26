@@ -18,6 +18,8 @@ func init() {
 
 func main() {
 
+	env.LoadEnv()
+
 	var err error
 
 	fmt.Printf("starting udp server\n")
@@ -29,7 +31,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := serve(context.Background(), ":6060"); err != nil {
+	udpServerPort := env.Get("UDP_SERVER_PORT")
+
+	udpServerPort = ":" + udpServerPort
+
+	if err := serve(context.Background(), udpServerPort); err != nil {
 		os.Exit(1)
 	}
 
