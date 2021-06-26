@@ -88,9 +88,10 @@ Make sure you keep the `server=$host:$port` same as .env's `UDP_SERVER_PROT`
 After that, visit your web app that is using the nginx config,
 visit any page, and it should start streaming access logs to kafka.
 
-**Note** Before running the client, make sure you have **ZooKeeper** and **Kafka** running, and the **topics** have been created.
-
-**Note** The program is at an very early stage.
+**Notes** 
+- Before running the client, make sure you have **ZooKeeper** and **Kafka** running, and the **topics** have been created.
+- Current docker image does not work, for what I believe due to a bug in [wurstmeister/kafka-docker#issue-516](https://github.com/wurstmeister/kafka-docker/issues/516), I get the same error as [segmentio/kafka-go#issues/682](https://github.com/segmentio/kafka-go/issues/682). Thus, you'll need to run kafka and zookeeper manually for the time being.
+- The program is at a very early stage. Program structure is subject to change.
 
 ### Architecture
 ![Logflow Architecture](images/logflow-architecture.png?raw=true "Logflow Architecture")
@@ -166,23 +167,23 @@ There is at the moment only one flag you can pass along when running the main.go
 These ^ are gems
 
 ## Todos 
-- [ ] Installations & setup
+- [x] Installations & setup
     - [x] Setup kafka
-    - [ ] Use docker container for kafka
+    - [x] Use docker container for kafka
     - [x] Decide on protobuf ( grpc / rpc )
-    - [ ] Setup a nginx docker
+    - [x] Setup a nginx docker
 - [x] Enable .env support     
-- [ ] Draw system architecture  
+- [x] Draw system architecture  
 - [x] Connect to kafka
 - [x] Setup a kafka client to receive messages
 - [x] Setup a kafka producer 
 - [ ] Write tests
-- [ ] Get some log data and test the whole system
-- [ ] Dockerize full app
+- [x] Get some log data and test the whole system
+- [x] Dockerize full app
 - [x] Prepare dummy NginxLogRequest, Packet & Headers
 - [x] Prepare a client to test grpc and kafka producer with dummy data
 - [x] Also see manually if kafka consumer is consuming messages
-- [ ] Document everything
+- [ ] Document everything ( on going so far)
 
 #### At the moment, I did not include any docker image for any component.
 
