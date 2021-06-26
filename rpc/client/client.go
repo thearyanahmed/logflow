@@ -15,7 +15,7 @@ import (
 )
 
 type RpcClientInterface interface {
-	Send(data string) error
+	Send(data string, topics[]string) error
 	Terminate() error
 	Wait()
 	Add()
@@ -81,7 +81,7 @@ func (rc *RpcClient) Add() {
 	rc.wg.Add(1)
 }
 
-func (rc *RpcClient) Send(data string) error {
+func (rc *RpcClient) Send(data string, topics[]string) error {
 	rc.lock.Lock()
 
 	defer rc.wg.Done()
@@ -90,7 +90,7 @@ func (rc *RpcClient) Send(data string) error {
 	json, err := json2.Marshal(data)
 
 	logRequest := packet.LogRequest{
-		Topics: []string{"hello_world"}, // todo handle topic
+		Topics: topics, // todo handle topic
 		Payload: json,
 	}
 
@@ -99,7 +99,6 @@ func (rc *RpcClient) Send(data string) error {
 	}
 
 	return rc.r.Send(&logRequest)
-
 }
 
 

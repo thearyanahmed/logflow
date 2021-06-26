@@ -58,17 +58,39 @@ go run main.go --action serve
 
 This is start tcp connect server at `RPC_PORT` ( from .env) . The default is 5053.
 
-To start the client, you can type
+Then you need to start the upd server by running
 
 ```bash
-go run main.go --action client
+go run server/udp_server.go
 ```
+
+Add the following to your nginx config,
+```text
+log_format tufin escape=json
+'{'
+     '"time":"$msec",'
+     '"connection":"$connection",'
+     '"request":"$request",'
+     '"status":"$status",'
+     '"user_agent":"$http_user_agent"'
+'}';
+
+
+# and inside your server block 
+server {
+    ...
+    access_log syslog:server=localhost:6060,facility=local7,tag=nginx,severity=info tufin;
+}
+```
+
+Make sure you keep the `server=$host:$port` same as .env's `UDP_SERVER_PROT`
+
+After that, visit your web app that is using the nginx config,
+visit any page, and it should start streaming access logs to kafka.
 
 **Note** Before running the client, make sure you have **ZooKeeper** and **Kafka** running, and the **topics** have been created.
 
-
 **Note** The program is at an very early stage.
-
 
 ### Architecture
 ![Logflow Architecture](images/logflow-architecture.png?raw=true "Logflow Architecture")

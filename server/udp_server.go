@@ -8,6 +8,7 @@ import (
 	"github.com/thearyanahmed/logflow/utils/env"
 	"net"
 	"os"
+	"strings"
 )
 
 var rpcClient *client.RpcClient
@@ -58,6 +59,8 @@ func serve(ctx context.Context, address string) error {
 		}
 	}()
 
+	topics := strings.Split(env.Get("KAFKA_TOPICS"),",")
+
 	errChan := make(chan error, 1)
 	// maxBufferSize specifies the size of the buffers that
 	// are used to temporarily hold data from the UDP packets
@@ -74,7 +77,7 @@ func serve(ctx context.Context, address string) error {
 
 			rpcClient.Add()
 
-			err = rpcClient.Send(string(buffer))
+			err = rpcClient.Send(string(buffer),topics)
 
 			fmt.Printf("log: %v\n",string(buffer))
 
